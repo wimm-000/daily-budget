@@ -8,6 +8,7 @@ A simple app to manage your daily budget. Track your spending, stay within your 
 - Daily budget tracking
 - Expense logging
 - Budget overview and insights
+- Admin panel for user management
 - *More features coming soon...*
 
 ## Getting Started
@@ -26,15 +27,30 @@ cd daily-budget
 
 # Install dependencies
 bun install
+```
 
-# Set up environment variables
+### Database Setup
+
+```bash
+# Copy environment variables
 cp .env.example .env.local
-# Edit .env.local with your DATABASE_URL
 
-# Push database schema
+# Create database and apply schema
 bun run db:push
 
-# Start development server
+# Seed database with default admin user
+bun run db:seed
+```
+
+This creates a default admin account:
+- **Email:** `admin@dailybudget.local`
+- **Password:** `admin123`
+
+> **Important:** Change the admin password after first login!
+
+### Start Development Server
+
+```bash
 bun run dev
 ```
 
@@ -47,7 +63,11 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 | `bun run dev` | Start development server |
 | `bun run build` | Build for production |
 | `bun run test` | Run tests |
-| `bun run db:studio` | Open Drizzle Studio |
+| `bun run db:push` | Push schema changes to database |
+| `bun run db:seed` | Seed database with default data |
+| `bun run db:studio` | Open Drizzle Studio UI |
+| `bun run db:generate` | Generate database migrations |
+| `bun run db:migrate` | Apply database migrations |
 
 ## Tech Stack
 
@@ -56,15 +76,21 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
 - **Database:** [Drizzle ORM](https://orm.drizzle.team/) + SQLite
 - **Forms:** [TanStack Form](https://tanstack.com/form) + [Zod](https://zod.dev/)
+- **Auth:** bcrypt for password hashing
 
 ## Project Structure
 
 ```
 src/
 ├── components/      # Reusable UI components
-├── db/              # Database schema and connection
+├── db/              # Database schema, connection, and seeds
+│   ├── index.ts     # Database connection
+│   ├── schema.ts    # Table definitions
+│   └── seed.ts      # Database seeding script
 ├── hooks/           # Custom React hooks
 ├── lib/             # Utility functions
+│   ├── utils.ts     # General utilities (cn, etc.)
+│   └── auth.ts      # Authentication helpers
 ├── routes/          # File-based routing
 └── styles.css       # Global styles
 ```

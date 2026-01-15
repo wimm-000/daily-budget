@@ -1,9 +1,6 @@
 [build]
-  command = "bun install && bun run build"
+  command = "npm run build"
   dir = "dist/client"
-
-[build.environment]
-  BUN_VERSION = "1.2.21"
 
 [dev]
   command = "bun run dev"

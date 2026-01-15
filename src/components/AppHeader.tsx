@@ -1,8 +1,20 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { LogOut, Wallet } from 'lucide-react'
+import { LogOut, Monitor, Moon, Sun, Wallet } from 'lucide-react'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { useTheme } from '@/hooks/useTheme'
 import { destroySession } from '@/lib/session'
 
 // Server function for logout
@@ -19,11 +31,14 @@ type AppHeaderProps = {
 
 export function AppHeader({ showAdminLink }: AppHeaderProps) {
   const navigate = useNavigate()
+  const { theme, toggleTheme } = useTheme()
 
   const handleLogout = async () => {
     await logout()
     navigate({ to: '/' })
   }
+
+  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
 
   return (
     <header className="border-b bg-background">
@@ -54,10 +69,37 @@ export function AppHeader({ showAdminLink }: AppHeaderProps) {
           </nav>
         </div>
 
-        <Button variant="ghost" size="sm" onClick={handleLogout}>
-          <LogOut className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">Logout</span>
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            title={`Theme: ${theme}`}
+            className="h-9 w-9"
+          >
+            <ThemeIcon className="h-4 w-4" />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You will be redirected to the login page.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     </header>
   )

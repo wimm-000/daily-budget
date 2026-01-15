@@ -4,6 +4,16 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 
 import appCss from "../styles.css?url";
 
+// Inline script to prevent flash of wrong theme
+const themeScript = `
+(function() {
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = stored === 'dark' || (stored !== 'light' && prefersDark);
+  if (isDark) document.documentElement.classList.add('dark');
+})();
+`;
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -31,8 +41,9 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
       </head>
       <body>

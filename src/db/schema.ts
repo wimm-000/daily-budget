@@ -6,7 +6,7 @@ export const users = sqliteTable('users', {
   email: text().notNull().unique(),
   password: text().notNull(),
   role: text({ enum: ['user', 'admin'] }).notNull().default('user'),
-  currency: text({ enum: ['USD', 'EUR'] }).notNull().default('USD'),
+  currency: text({ enum: ['USD', 'EUR'] }).notNull().default('EUR'),
   avatar: text(),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(
     sql`(unixepoch())`,
@@ -39,12 +39,26 @@ export const budgets = sqliteTable('budgets', {
   ),
 })
 
+// Expense categories
+export const EXPENSE_CATEGORIES = [
+  'food',
+  'transport', 
+  'entertainment',
+  'shopping',
+  'bills',
+  'health',
+  'other',
+] as const
+
+export type ExpenseCategory = typeof EXPENSE_CATEGORIES[number]
+
 // Individual expenses
 export const expenses = sqliteTable('expenses', {
   id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
   userId: integer('user_id').notNull().references(() => users.id),
   amount: real().notNull(),
   description: text(),
+  category: text({ enum: EXPENSE_CATEGORIES }).default('other'),
   date: text().notNull(), // YYYY-MM-DD format
   createdAt: integer('created_at', { mode: 'timestamp' }).default(
     sql`(unixepoch())`,
@@ -60,6 +74,30 @@ export const dailyLogs = sqliteTable('daily_logs', {
   carryover: real().notNull().default(0), // Amount carried from previous day (+ or -)
   totalSpent: real('total_spent').notNull().default(0),
   remaining: real().notNull().default(0), // dailyBudget + carryover - totalSpent
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(
+    sql`(unixepoch())`,
+  ),
+})
+
+// Monthly fixed expenses (rent, subscriptions, etc.)
+export const fixedExpenses = sqliteTable('fixed_expenses', {
+  id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  name: text().notNull(),
+  amount: real().notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(
+    sql`(unixepoch())`,
+  ),
+})
+
+// Income / money added to the budget
+export const incomes = sqliteTable('incomes', {
+  id: integer({ mode: 'number' }).primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  amount: real().notNull(),
+  description: text(),
+  month: integer().notNull(), // 1-12
+  year: integer().notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(
     sql`(unixepoch())`,
   ),

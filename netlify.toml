@@ -1,6 +1,9 @@
 [build]
-  command = "npm run build"
+  command = "npm ci && npm run build"
   dir = "dist/client"
+
+[build.environment]
+  NPM_FLAGS = "--prefer-online"
 
 [dev]
   command = "bun run dev"

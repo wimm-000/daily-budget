@@ -878,35 +878,113 @@ function DashboardPage() {
               {isCurrentMonth ? (
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      {/* Available Today - Main focus */}
-                      <div className="flex-1">
-                        <p className="text-sm text-muted-foreground mb-1">Available Today</p>
-                        <div className={`text-3xl font-bold ${
-                          (todayLog?.remaining ?? 0) < 0 ? 'text-destructive' : 'text-green-600'
-                        }`}>
-                          {formatCurrency(todayLog?.remaining ?? dailyBudget)}
-                        </div>
-                        {todayLog && todayLog.carryover !== 0 && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                            {todayLog.carryover > 0 ? (
-                              <><TrendingUp className="h-3 w-3 text-green-600" /> +{formatCurrency(todayLog.carryover)} carried over</>
-                            ) : (
-                              <><TrendingDown className="h-3 w-3 text-destructive" /> {formatCurrency(todayLog.carryover)} from yesterday</>
-                            )}
-                          </p>
-                        )}
-                      </div>
+                    <div className="flex items-center gap-6">
+                      {/* Circle Progress */}
+                      {(() => {
+                        const totalBudget = dailyBudget + (todayLog?.carryover ?? 0)
+                        const spent = todayLog?.totalSpent ?? 0
+                        const remaining = todayLog?.remaining ?? dailyBudget
+                        const isOverspent = remaining < 0
+                        
+                        // Calculate percentage (0-100), capped for display
+                        let spentPercent = totalBudget > 0 ? (spent / totalBudget) * 100 : 0
+                        if (isOverspent) spentPercent = 100 + Math.min(50, (Math.abs(remaining) / totalBudget) * 50)
+                        spentPercent = Math.min(spentPercent, 150) // Cap at 150% for visual
+                        
+                        const radius = 40
+                        const strokeWidth = 8
+                        const circumference = 2 * Math.PI * radius
+                        const spentOffset = circumference - (Math.min(spentPercent, 100) / 100) * circumference
+                        const overspentOffset = isOverspent 
+                          ? circumference - ((spentPercent - 100) / 50) * circumference 
+                          : circumference
+                        
+                        return (
+                          <div className="relative flex-shrink-0">
+                            <svg width="100" height="100" className="transform -rotate-90">
+                              {/* Background circle */}
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r={radius}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                className="text-muted-foreground/30"
+                              />
+                              {/* Spent portion (green when under budget) */}
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r={radius}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                strokeDasharray={circumference}
+                                strokeDashoffset={spentOffset}
+                                strokeLinecap="round"
+                                className={isOverspent ? 'text-yellow-500' : 'text-green-500'}
+                              />
+                              {/* Overspent portion (red) */}
+                              {isOverspent && (
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r={radius}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth={strokeWidth}
+                                  strokeDasharray={circumference}
+                                  strokeDashoffset={overspentOffset}
+                                  strokeLinecap="round"
+                                  className="text-destructive"
+                                />
+                              )}
+                            </svg>
+                            {/* Center text */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className={`text-lg font-bold ${isOverspent ? 'text-destructive' : 'text-green-600'}`}>
+                                {isOverspent ? '-' : ''}{Math.round(isOverspent ? spentPercent - 100 : 100 - spentPercent)}%
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {isOverspent ? 'over' : 'left'}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })()}
                       
-                      {/* Secondary stats */}
-                      <div className="flex gap-6 sm:gap-8 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Daily Budget</p>
-                          <p className="font-semibold">{formatCurrency(dailyBudget)}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Spent Today</p>
-                          <p className="font-semibold">{formatCurrency(todayLog?.totalSpent ?? 0)}</p>
+                      {/* Stats */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Available Today</p>
+                            <div className={`text-2xl sm:text-3xl font-bold ${
+                              (todayLog?.remaining ?? 0) < 0 ? 'text-destructive' : 'text-green-600'
+                            }`}>
+                              {formatCurrency(todayLog?.remaining ?? dailyBudget)}
+                            </div>
+                            {todayLog && todayLog.carryover !== 0 && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                {todayLog.carryover > 0 ? (
+                                  <><TrendingUp className="h-3 w-3 text-green-600" /> +{formatCurrency(todayLog.carryover)} carried</>
+                                ) : (
+                                  <><TrendingDown className="h-3 w-3 text-destructive" /> {formatCurrency(todayLog.carryover)} debt</>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="flex gap-4 sm:gap-6 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Budget</p>
+                              <p className="font-semibold">{formatCurrency(dailyBudget)}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Spent</p>
+                              <p className="font-semibold">{formatCurrency(todayLog?.totalSpent ?? 0)}</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -916,27 +994,97 @@ function DashboardPage() {
                 /* Past month summary */
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      {/* Total Spent - Main focus */}
-                      <div className="flex-1">
-                        <p className="text-sm text-muted-foreground mb-1">Total Spent</p>
-                        <div className="text-3xl font-bold">
-                          {formatCurrency(data?.monthExpenses?.reduce((sum, e) => sum + e.amount, 0) ?? 0)}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {data?.monthExpenses?.length ?? 0} expense(s)
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-6">
+                      {/* Circle Progress for month */}
+                      {(() => {
+                        const monthlyBudget = availableForDaily
+                        const spent = data?.monthExpenses?.reduce((sum, e) => sum + e.amount, 0) ?? 0
+                        const isOverspent = spent > monthlyBudget
+                        
+                        let spentPercent = monthlyBudget > 0 ? (spent / monthlyBudget) * 100 : 0
+                        if (isOverspent) spentPercent = 100 + Math.min(50, ((spent - monthlyBudget) / monthlyBudget) * 50)
+                        spentPercent = Math.min(spentPercent, 150)
+                        
+                        const radius = 40
+                        const strokeWidth = 8
+                        const circumference = 2 * Math.PI * radius
+                        const spentOffset = circumference - (Math.min(spentPercent, 100) / 100) * circumference
+                        const overspentOffset = isOverspent 
+                          ? circumference - ((spentPercent - 100) / 50) * circumference 
+                          : circumference
+                        
+                        return (
+                          <div className="relative flex-shrink-0">
+                            <svg width="100" height="100" className="transform -rotate-90">
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r={radius}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                className="text-muted-foreground/30"
+                              />
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r={radius}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                strokeDasharray={circumference}
+                                strokeDashoffset={spentOffset}
+                                strokeLinecap="round"
+                                className={isOverspent ? 'text-yellow-500' : 'text-green-500'}
+                              />
+                              {isOverspent && (
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r={radius}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth={strokeWidth}
+                                  strokeDasharray={circumference}
+                                  strokeDashoffset={overspentOffset}
+                                  strokeLinecap="round"
+                                  className="text-destructive"
+                                />
+                              )}
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className={`text-lg font-bold ${isOverspent ? 'text-destructive' : 'text-green-600'}`}>
+                                {Math.round(Math.min(spentPercent, 100))}%
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">used</span>
+                            </div>
+                          </div>
+                        )
+                      })()}
                       
-                      {/* Secondary stats */}
-                      <div className="flex gap-6 sm:gap-8 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Monthly Budget</p>
-                          <p className="font-semibold">{formatCurrency(budget.monthlyAmount)}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Days Tracked</p>
-                          <p className="font-semibold">{data?.recentLogs?.length ?? 0} / {daysInMonth}</p>
+                      {/* Stats */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Total Spent</p>
+                            <div className="text-2xl sm:text-3xl font-bold">
+                              {formatCurrency(data?.monthExpenses?.reduce((sum, e) => sum + e.amount, 0) ?? 0)}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {data?.monthExpenses?.length ?? 0} expense(s)
+                            </p>
+                          </div>
+                          
+                          <div className="flex gap-4 sm:gap-6 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Budget</p>
+                              <p className="font-semibold">{formatCurrency(availableForDaily)}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Days</p>
+                              <p className="font-semibold">{data?.recentLogs?.length ?? 0}/{daysInMonth}</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

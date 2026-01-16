@@ -122,14 +122,23 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-start justify-center pt-[10%] bg-background px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Daily Budget</CardTitle>
-          <CardDescription>
-            Sign in to manage your daily budget
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen flex items-start justify-center pt-24 sm:pt-[10%] bg-background px-4">
+      <div className="relative w-full max-w-md">
+        {/* Cover image circle */}
+        <div className="absolute left-1/2 -translate-x-1/2 -top-16 z-10">
+          <img
+            src="/cover.png"
+            alt="Daily Budget"
+            className="w-32 h-32 rounded-full object-cover border-4 border-background shadow-lg"
+          />
+        </div>
+        <Card className="w-full pt-18">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">Daily Budget</CardTitle>
+            <CardDescription>
+              Sign in to manage your daily budget
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
@@ -184,6 +193,7 @@ function LoginPage() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

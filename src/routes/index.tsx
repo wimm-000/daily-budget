@@ -74,12 +74,8 @@ export const Route = createFileRoute('/')({
   beforeLoad: async () => {
     const { user } = await checkAuth()
     if (user) {
-      // Already logged in, redirect based on role
-      if (user.role === 'admin') {
-        throw redirect({ to: '/admin/users' })
-      } else {
-        throw redirect({ to: '/dashboard' })
-      }
+      // Already logged in, redirect to dashboard
+      throw redirect({ to: '/dashboard' })
     }
   },
 })
@@ -107,12 +103,8 @@ function LoginPage() {
         return
       }
 
-      // Redirect based on role
-      if (result.user.role === 'admin') {
-        navigate({ to: '/admin/users' })
-      } else {
-        navigate({ to: '/dashboard' })
-      }
+      // Redirect to dashboard after login
+      navigate({ to: '/dashboard' })
     } catch (err) {
       setError('An unexpected error occurred')
       console.error('Login error:', err)

@@ -812,8 +812,8 @@ function DashboardPage() {
     <div className="min-h-screen bg-background">
       <AppHeader showAdminLink={data?.user?.role === 'admin'} />
 
-      <main className="p-4 sm:p-6 md:p-8">
-        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+      <main className="p-4 sm:p-6 md:p-8" style={{ viewTransitionName: 'page-content' }}>
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6" style={{ viewTransitionName: 'month-content' }}>
           {/* Month Navigation */}
           <div className="flex items-center justify-between">
             <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
@@ -997,7 +997,7 @@ function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex justify-end mt-4">
+                    <div className="flex justify-center mt-4">
                       <Button variant="outline" size="sm" onClick={() => setIsSettingsOpen(true)}>
                         <Settings className="h-4 w-4" />
                         Settings

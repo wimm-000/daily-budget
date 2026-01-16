@@ -290,7 +290,7 @@ function AdminUsersPage() {
     <div className="min-h-screen bg-background">
       <AppHeader showAdminLink />
       
-      <main className="p-8">
+      <main className="p-8" style={{ viewTransitionName: 'page-content' }}>
         <div className="max-w-6xl mx-auto">
           <Card>
           <CardHeader>

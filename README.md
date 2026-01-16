@@ -5,18 +5,19 @@ A simple app to manage your daily budget. Track your spending, stay within your 
 ## Features
 
 <!-- TODO: Update with actual features -->
+
 - Daily budget tracking
 - Expense logging
 - Budget overview and insights
 - Admin panel for user management
-- *More features coming soon...*
+- _More features coming soon..._
 
 ## Getting Started
 
 ### Prerequisites
 
 - [Bun](https://bun.sh/) (recommended) or Node.js 18+
-- SQLite
+- SQLite / turso
 
 ### Installation
 
@@ -43,6 +44,7 @@ bun run db:seed
 ```
 
 This creates a default admin account:
+
 - **Email:** `admin@dailybudget.local`
 - **Password:** `admin123`
 
@@ -58,16 +60,16 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `bun run dev` | Start development server |
-| `bun run build` | Build for production |
-| `bun run test` | Run tests |
-| `bun run db:push` | Push schema changes to database |
-| `bun run db:seed` | Seed database with default data |
-| `bun run db:studio` | Open Drizzle Studio UI |
-| `bun run db:generate` | Generate database migrations |
-| `bun run db:migrate` | Apply database migrations |
+| Command               | Description                     |
+| --------------------- | ------------------------------- |
+| `bun run dev`         | Start development server        |
+| `bun run build`       | Build for production            |
+| `bun run test`        | Run tests                       |
+| `bun run db:push`     | Push schema changes to database |
+| `bun run db:seed`     | Seed database with default data |
+| `bun run db:studio`   | Open Drizzle Studio UI          |
+| `bun run db:generate` | Generate database migrations    |
+| `bun run db:migrate`  | Apply database migrations       |
 
 ## Tech Stack
 
@@ -98,6 +100,7 @@ src/
 ## Roadmap
 
 <!-- TODO: Update with actual roadmap -->
+
 - [ ] Feature 1
 - [ ] Feature 2
 - [ ] Feature 3
@@ -105,9 +108,11 @@ src/
 ## Contributing
 
 <!-- TODO: Add contribution guidelines -->
+
 Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License
 
 <!-- TODO: Add license -->
+
 MIT

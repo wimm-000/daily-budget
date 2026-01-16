@@ -14,6 +14,65 @@ const themeScript = `
 })();
 `;
 
+// Loading splash screen styles (inline to show immediately)
+const splashStyles = `
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  z-index: 9999;
+  transition: opacity 0.3s ease-out;
+}
+.dark #splash-screen {
+  background: #0a0a0a;
+}
+#splash-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+#splash-screen img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+#splash-screen p {
+  margin-top: 16px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0a0a0a;
+}
+.dark #splash-screen p {
+  color: #fafafa;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+`;
+
+// Script to hide splash screen after hydration
+const hideSplashScript = `
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var splash = document.getElementById('splash-screen');
+    if (splash) {
+      splash.classList.add('hidden');
+      setTimeout(function() { splash.remove(); }, 300);
+    }
+  }, 100);
+});
+`;
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -72,9 +131,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <style dangerouslySetInnerHTML={{ __html: splashStyles }} />
+        <script dangerouslySetInnerHTML={{ __html: hideSplashScript }} />
         <HeadContent />
       </head>
       <body>
+        {/* Splash screen shown while app loads */}
+        <div id="splash-screen">
+          <img src="/cover.png" alt="Daily Budget" />
+          <p>Daily Budget</p>
+        </div>
         {children}
         <TanStackDevtools
           config={{

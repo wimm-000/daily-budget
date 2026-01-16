@@ -1,6 +1,6 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { LogOut, Monitor, Moon, Sun } from 'lucide-react'
+import { Loader2, LogOut, Monitor, Moon, Sun } from 'lucide-react'
 
 import {
   AlertDialog,
@@ -32,6 +32,7 @@ type AppHeaderProps = {
 export function AppHeader({ showAdminLink }: AppHeaderProps) {
   const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
+  const isLoading = useRouterState({ select: (s) => s.status === 'pending' })
 
   const handleLogout = async () => {
     await logout()
@@ -41,7 +42,7 @@ export function AppHeader({ showAdminLink }: AppHeaderProps) {
   const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
 
   return (
-    <header className="border-b bg-background">
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-6">
           <Link to="/dashboard" className="flex items-center gap-2 font-semibold">
@@ -65,6 +66,9 @@ export function AppHeader({ showAdminLink }: AppHeaderProps) {
               </Link>
             )}
           </nav>
+          {isLoading && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
         </div>
 
         <div className="flex items-center gap-1">

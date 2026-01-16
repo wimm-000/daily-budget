@@ -876,8 +876,17 @@ function DashboardPage() {
             <>
               {/* Summary Card - Different for current vs past months */}
               {isCurrentMonth ? (
-                <Card>
-                  <CardContent className="pt-6">
+                <div className="relative mt-16">
+                  {/* Cover image circle */}
+                  <div className="absolute left-1/2 -translate-x-1/2 -top-16 z-10">
+                    <img
+                      src="/cover.png"
+                      alt="Daily Budget"
+                      className="w-32 h-32 rounded-full object-cover border-4 border-background shadow-lg"
+                    />
+                  </div>
+                  <Card className="pt-18">
+                    <CardContent >
                     <div className="flex items-center gap-6">
                       {/* Circle Progress */}
                       {(() => {
@@ -988,8 +997,15 @@ function DashboardPage() {
                         </div>
                       </div>
                     </div>
+                    <div className="flex justify-end mt-4">
+                      <Button variant="outline" size="sm" onClick={() => setIsSettingsOpen(true)}>
+                        <Settings className="h-4 w-4" />
+                        Settings
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
+                </div>
               ) : (
                 /* Past month summary */
                 <Card>
@@ -1102,10 +1118,6 @@ function DashboardPage() {
                   <Button variant="outline" onClick={() => setIsIncomeOpen(true)}>
                     <Banknote className="h-4 w-4 mr-2" />
                     Add Money
-                  </Button>
-                  <Button variant="outline" onClick={() => setIsSettingsOpen(true)}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
                   </Button>
                 </div>
               )}

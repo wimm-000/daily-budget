@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { LogOut, Monitor, Moon, Sun, Wallet } from 'lucide-react'
+import { LogOut, Monitor, Moon, Sun } from 'lucide-react'
 
 import {
   AlertDialog,
@@ -45,23 +45,21 @@ export function AppHeader({ showAdminLink }: AppHeaderProps) {
       <div className="flex h-14 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-6">
           <Link to="/dashboard" className="flex items-center gap-2 font-semibold">
-            <Wallet className="h-5 w-5" />
+            <img src="/header.png" alt="Daily Budget" className="h-10 w-10 rounded-full object-cover" />
             <span className="hidden sm:inline">Daily Budget</span>
           </Link>
           
           <nav className="flex items-center gap-3 sm:gap-4 text-sm">
             <Link
               to="/dashboard"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              activeProps={{ className: 'text-foreground font-medium' }}
+              className="text-muted-foreground hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium [&.active]:underline [&.active]:underline-offset-4"
             >
               Dashboard
             </Link>
             {showAdminLink && (
               <Link
                 to="/admin/users"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                activeProps={{ className: 'text-foreground font-medium' }}
+                className="text-muted-foreground hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium [&.active]:underline [&.active]:underline-offset-4"
               >
                 Users
               </Link>

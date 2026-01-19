@@ -7,6 +7,7 @@ export const users = sqliteTable('users', {
   password: text().notNull(),
   role: text({ enum: ['user', 'admin'] }).notNull().default('user'),
   currency: text({ enum: ['USD', 'EUR'] }).notNull().default('EUR'),
+  monthStartDay: integer('month_start_day').notNull().default(1), // 1-28, day of month when budget period starts
   avatar: text(),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(
     sql`(unixepoch())`,
@@ -34,6 +35,7 @@ export const budgets = sqliteTable('budgets', {
   monthlyAmount: real('monthly_amount').notNull(),
   month: integer().notNull(), // 1-12
   year: integer().notNull(),
+  startDay: integer('start_day'), // nullable - override user's default monthStartDay for this specific period
   createdAt: integer('created_at', { mode: 'timestamp' }).default(
     sql`(unixepoch())`,
   ),

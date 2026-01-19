@@ -13,6 +13,16 @@ import { db } from '@/db'
 import { budgets, expenses, dailyLogs, users, fixedExpenses, incomes, EXPENSE_CATEGORIES } from '@/db/schema'
 import type { ExpenseCategory } from '@/db/schema'
 import { getSession } from '@/lib/session'
+import {
+  getBudgetPeriod,
+  getBudgetPeriodForDate,
+  getToday as getTodayFromLib,
+  formatPeriodDisplay,
+  areDatesInSamePeriod,
+  isCurrentPeriod,
+  isFuturePeriod,
+  getYesterday,
+} from '@/lib/budget-period'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -54,9 +64,9 @@ const CATEGORY_CONFIG: Record<ExpenseCategory, { label: string; icon: typeof Ute
   other: { label: 'Other', icon: HelpCircle, color: 'text-gray-500' },
 }
 
-// Helper functions
+// Helper functions - use the budget-period utilities
 function getToday() {
-  return new Date().toISOString().split('T')[0]
+  return getTodayFromLib()
 }
 
 function getCurrentMonth() {
@@ -71,12 +81,17 @@ function getDaysInMonth(month: number, year: number) {
   return new Date(year, month, 0).getDate()
 }
 
-// Helper to get previous month/year
+// Helper to get previous month/year (for calendar month navigation)
 function getPreviousMonth(month: number, year: number): { month: number; year: number } {
   if (month === 1) {
     return { month: 12, year: year - 1 }
   }
   return { month: month - 1, year }
+}
+
+// Helper to get effective start day for the period
+function getEffectiveStartDay(budget: { startDay: number | null } | null | undefined, userStartDay: number): number {
+  return budget?.startDay ?? userStartDay
 }
 
 // Server Functions
@@ -91,18 +106,29 @@ const getDashboardData = createServerFn({
   }
 
   const today = getToday()
-  const currentMonth = getCurrentMonth()
-  const currentYear = getCurrentYear()
-  
-  // Use provided month/year for viewing, default to current
-  const viewMonth = data?.viewMonth || currentMonth
-  const viewYear = data?.viewYear || currentYear
-  const isCurrentMonth = viewMonth === currentMonth && viewYear === currentYear
 
-  // Get user with currency preference
+  // Get user with currency preference and monthStartDay setting
   const user = await db.query.users.findFirst({
     where: eq(users.id, session.id),
   })
+
+  // User's global start day (default to 1 if not set)
+  const userStartDay = user?.monthStartDay ?? 1
+  
+  // Determine which period we should view
+  // If no month/year specified, determine current period based on today and user's start day
+  let viewMonth: number
+  let viewYear: number
+  
+  if (data?.viewMonth && data?.viewYear) {
+    viewMonth = data.viewMonth
+    viewYear = data.viewYear
+  } else {
+    // Determine current period from today's date
+    const currentPeriod = getBudgetPeriodForDate(today, userStartDay)
+    viewMonth = currentPeriod.month
+    viewYear = currentPeriod.year
+  }
 
   // Get viewed month's budget
   let budget = await db.query.budgets.findFirst({
@@ -113,11 +139,20 @@ const getDashboardData = createServerFn({
     ),
   })
 
+  // Effective start day for this period (budget override or user default)
+  const effectiveStartDay = getEffectiveStartDay(budget, userStartDay)
+  
+  // Get the budget period boundaries
+  const period = getBudgetPeriod(viewMonth, viewYear, effectiveStartDay)
+  
+  // Check if we're viewing the current period
+  const viewingCurrentPeriod = isCurrentPeriod(viewMonth, viewYear, effectiveStartDay)
+
   // Track if budget was copied from previous month
   let budgetCopiedFromPreviousMonth = false
 
-  // Only auto-copy budget when viewing current month
-  if (!budget && isCurrentMonth) {
+  // Only auto-copy budget when viewing current period
+  if (!budget && viewingCurrentPeriod) {
     const prev = getPreviousMonth(viewMonth, viewYear)
     const previousBudget = await db.query.budgets.findFirst({
       where: and(
@@ -128,12 +163,13 @@ const getDashboardData = createServerFn({
     })
 
     if (previousBudget) {
-      // Copy previous month's budget to current month
+      // Copy previous month's budget to current month (don't copy startDay override)
       const [newBudget] = await db.insert(budgets).values({
         userId: session.id,
         monthlyAmount: previousBudget.monthlyAmount,
         month: viewMonth,
         year: viewYear,
+        startDay: null, // Use user's default for new periods
       }).returning()
       
       budget = newBudget
@@ -147,7 +183,7 @@ const getDashboardData = createServerFn({
     orderBy: [desc(fixedExpenses.createdAt)],
   })
 
-  // Get this month's incomes (NOT copied from previous month)
+  // Get this period's incomes (NOT copied from previous month)
   const monthIncomes = await db.query.incomes.findMany({
     where: and(
       eq(incomes.userId, session.id),
@@ -161,8 +197,8 @@ const getDashboardData = createServerFn({
   const totalFixedExpenses = userFixedExpenses.reduce((sum, e) => sum + e.amount, 0)
   const totalIncomes = monthIncomes.reduce((sum, i) => sum + i.amount, 0)
 
-  // Initialize today's log if we have a budget but no log for today (only for current month)
-  if (budget && isCurrentMonth) {
+  // Initialize today's log if we have a budget but no log for today (only for current period)
+  if (budget && viewingCurrentPeriod) {
     const existingLog = await db.query.dailyLogs.findFirst({
       where: and(
         eq(dailyLogs.userId, session.id),
@@ -177,21 +213,22 @@ const getDashboardData = createServerFn({
         totalFixedExpenses,
         totalIncomes,
         viewMonth,
-        viewYear
+        viewYear,
+        effectiveStartDay
       )
     }
   }
 
   // Get today's log (may have just been created)
-  const todayLog = isCurrentMonth ? await db.query.dailyLogs.findFirst({
+  const todayLog = viewingCurrentPeriod ? await db.query.dailyLogs.findFirst({
     where: and(
       eq(dailyLogs.userId, session.id),
       eq(dailyLogs.date, today)
     ),
   }) : null
 
-  // Get today's expenses (only for current month view)
-  const todayExpenses = isCurrentMonth ? await db.query.expenses.findMany({
+  // Get today's expenses (only for current period view)
+  const todayExpenses = viewingCurrentPeriod ? await db.query.expenses.findMany({
     where: and(
       eq(expenses.userId, session.id),
       eq(expenses.date, today)
@@ -199,32 +236,34 @@ const getDashboardData = createServerFn({
     orderBy: [desc(expenses.createdAt)],
   }) : []
 
-  // Get daily logs for the viewed month
-  const startOfMonth = `${viewYear}-${String(viewMonth).padStart(2, '0')}-01`
-  const endOfMonth = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${getDaysInMonth(viewMonth, viewYear)}`
+  // Get daily logs for the viewed period
+  // IMPORTANT: We always filter by calendar month to avoid losing data when start day changes
+  // The period.startDate/endDate is used for calculations, not for data filtering
+  const startOfCalendarMonth = `${viewYear}-${String(viewMonth).padStart(2, '0')}-01`
+  const daysInCalendarMonth = new Date(viewYear, viewMonth, 0).getDate()
+  const endOfCalendarMonth = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(daysInCalendarMonth).padStart(2, '0')}`
   
   const recentLogs = await db.query.dailyLogs.findMany({
-    where: and(
-      eq(dailyLogs.userId, session.id),
-      // Filter to viewed month
-    ),
+    where: eq(dailyLogs.userId, session.id),
     orderBy: [desc(dailyLogs.date)],
-    limit: 31, // Max days in a month
+    limit: 62, // Up to 2 months of data to cover period spans
   })
 
-  // Filter logs to viewed month (since SQLite date comparison is tricky)
+  // Filter logs to the calendar month (not period) to preserve historical data
   const filteredLogs = recentLogs.filter(log => {
-    return log.date >= startOfMonth && log.date <= endOfMonth
+    return log.date >= startOfCalendarMonth && log.date <= endOfCalendarMonth
   })
 
   // Get all expenses for the viewed month (for history view)
-  const monthExpenses = await db.query.expenses.findMany({
+  // IMPORTANT: Filter by calendar month, not period, to preserve historical data
+  const allExpenses = await db.query.expenses.findMany({
     where: eq(expenses.userId, session.id),
     orderBy: [desc(expenses.date), desc(expenses.createdAt)],
   })
 
-  const filteredMonthExpenses = monthExpenses.filter(exp => {
-    return exp.date >= startOfMonth && exp.date <= endOfMonth
+  // Filter expenses to the calendar month (not period) to preserve historical data
+  const filteredMonthExpenses = allExpenses.filter(exp => {
+    return exp.date >= startOfCalendarMonth && exp.date <= endOfCalendarMonth
   })
 
   return {
@@ -242,7 +281,11 @@ const getDashboardData = createServerFn({
     today,
     month: viewMonth,
     year: viewYear,
-    isCurrentMonth,
+    isCurrentMonth: viewingCurrentPeriod,
+    // New fields for period display
+    period,
+    effectiveStartDay,
+    userStartDay,
   }
 })
 
@@ -250,6 +293,7 @@ const setBudgetSchema = z.object({
   monthlyAmount: z.number().positive(),
   month: z.number().min(1).max(12),
   year: z.number(),
+  startDay: z.number().min(1).max(28).nullable().optional(),
 })
 
 type SetBudgetInput = z.infer<typeof setBudgetSchema>
@@ -264,6 +308,12 @@ const setBudget = createServerFn({
       throw new Error('UNAUTHORIZED')
     }
 
+    // Get user's default start day
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, session.id),
+    })
+    const userStartDay = user?.monthStartDay ?? 1
+
     // Check if budget already exists for this month
     const existing = await db.query.budgets.findFirst({
       where: and(
@@ -273,9 +323,15 @@ const setBudget = createServerFn({
       ),
     })
 
+    // Effective start day for the period
+    const effectiveStartDay = data.startDay ?? userStartDay
+
     if (existing) {
       await db.update(budgets)
-        .set({ monthlyAmount: data.monthlyAmount })
+        .set({ 
+          monthlyAmount: data.monthlyAmount,
+          startDay: data.startDay ?? null, // null means use user's default
+        })
         .where(eq(budgets.id, existing.id))
     } else {
       await db.insert(budgets).values({
@@ -283,6 +339,7 @@ const setBudget = createServerFn({
         monthlyAmount: data.monthlyAmount,
         month: data.month,
         year: data.year,
+        startDay: data.startDay ?? null,
       })
     }
 
@@ -302,8 +359,8 @@ const setBudget = createServerFn({
     })
     const totalIncomes = monthIncomes.reduce((sum, i) => sum + i.amount, 0)
 
-    // Initialize today's log if needed
-    await initializeDailyLog(session.id, data.monthlyAmount, totalFixed, totalIncomes, data.month, data.year)
+    // Initialize today's log if needed (with the effective start day)
+    await initializeDailyLog(session.id, data.monthlyAmount, totalFixed, totalIncomes, data.month, data.year, effectiveStartDay)
 
     return { success: true }
   })
@@ -314,14 +371,17 @@ async function initializeDailyLog(
   totalFixedExpenses: number,
   totalIncomes: number,
   month: number,
-  year: number
+  year: number,
+  startDay: number = 1
 ) {
   const today = getToday()
-  const daysInMonth = getDaysInMonth(month, year)
+  
+  // Get the budget period for this month with the specified start day
+  const period = getBudgetPeriod(month, year, startDay)
   
   // Available = Monthly Budget + Incomes - Fixed Expenses
   const availableForDaily = monthlyAmount + totalIncomes - totalFixedExpenses
-  const dailyBudget = Math.max(0, availableForDaily / daysInMonth)
+  const dailyBudget = Math.max(0, availableForDaily / period.daysInPeriod)
 
   // Check if today's log exists
   const existing = await db.query.dailyLogs.findFirst({
@@ -332,20 +392,16 @@ async function initializeDailyLog(
   })
 
   if (!existing) {
-    // Get yesterday's remaining to calculate carryover
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
+    // Get yesterday's date
+    const yesterdayStr = getYesterday(today)
     
-    // Check if yesterday was in a different month - if so, reset carryover
-    const yesterdayMonth = yesterday.getMonth() + 1
-    const yesterdayYear = yesterday.getFullYear()
-    const isNewMonth = yesterdayMonth !== month || yesterdayYear !== year
+    // Check if yesterday was in the same budget period - if not, reset carryover
+    const isSamePeriod = areDatesInSamePeriod(yesterdayStr, today, startDay)
 
     let carryover = 0
     
-    // Only carry over if within the same month
-    if (!isNewMonth) {
+    // Only carry over if within the same budget period
+    if (isSamePeriod) {
       const yesterdayLog = await db.query.dailyLogs.findFirst({
         where: and(
           eq(dailyLogs.userId, userId),
@@ -492,6 +548,30 @@ const updateCurrency = createServerFn({
     return { success: true }
   })
 
+// Update user's default month start day
+const updateMonthStartDaySchema = z.object({
+  monthStartDay: z.number().min(1).max(28),
+})
+
+type UpdateMonthStartDayInput = z.infer<typeof updateMonthStartDaySchema>
+
+const updateMonthStartDay = createServerFn({
+  method: 'POST',
+})
+  .inputValidator((data: UpdateMonthStartDayInput) => updateMonthStartDaySchema.parse(data))
+  .handler(async ({ data }: { data: UpdateMonthStartDayInput }) => {
+    const session = await getSession()
+    if (!session) {
+      throw new Error('UNAUTHORIZED')
+    }
+
+    await db.update(users)
+      .set({ monthStartDay: data.monthStartDay })
+      .where(eq(users.id, session.id))
+    
+    return { success: true }
+  })
+
 // Fixed Expenses Server Functions
 const addFixedExpenseSchema = z.object({
   name: z.string().min(1),
@@ -628,6 +708,13 @@ function DashboardPage() {
   const [incomeAmount, setIncomeAmount] = useState('')
   const [incomeDescription, setIncomeDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  // New state for month start day settings
+  const [selectedMonthStartDay, setSelectedMonthStartDay] = useState<number>(
+    data?.userStartDay ?? 1
+  )
+  const [budgetStartDayOverride, setBudgetStartDayOverride] = useState<number | null>(
+    data?.budget?.startDay ?? null
+  )
 
   const handleSetBudget = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -639,11 +726,17 @@ function DashboardPage() {
         await updateCurrency({ data: { currency: selectedCurrency } })
       }
       
+      // Update month start day if changed
+      if (selectedMonthStartDay !== (data?.userStartDay ?? 1)) {
+        await updateMonthStartDay({ data: { monthStartDay: selectedMonthStartDay } })
+      }
+      
       await setBudget({
         data: {
           monthlyAmount: parseFloat(monthlyAmount),
           month: data?.month || getCurrentMonth(),
           year: data?.year || getCurrentYear(),
+          startDay: budgetStartDayOverride,
         },
       })
       setIsBudgetOpen(false)
@@ -753,13 +846,15 @@ function DashboardPage() {
   const todayLog = data?.todayLog
   const budget = data?.budget
   const currency = data?.user?.currency || 'EUR'
-  const daysInMonth = getDaysInMonth(data?.month || getCurrentMonth(), data?.year || getCurrentYear())
+  // Use period days for calculations instead of calendar month days
+  const daysInPeriod = data?.period?.daysInPeriod || getDaysInMonth(data?.month || getCurrentMonth(), data?.year || getCurrentYear())
+  const effectiveStartDay = data?.effectiveStartDay ?? 1
   
-  // Calculate daily budget: (Monthly + Incomes - Fixed Expenses) / Days
+  // Calculate daily budget: (Monthly + Incomes - Fixed Expenses) / Days in Period
   const totalFixedExpenses = data?.totalFixedExpenses || 0
   const totalIncomes = data?.totalIncomes || 0
   const availableForDaily = (budget?.monthlyAmount || 0) + totalIncomes - totalFixedExpenses
-  const dailyBudget = budget ? Math.max(0, availableForDaily / daysInMonth) : 0
+  const dailyBudget = budget ? Math.max(0, availableForDaily / daysInPeriod) : 0
 
   const formatCurrency = (amount: number) => {
     const locale = currency === 'EUR' ? 'de-DE' : 'en-US'
@@ -775,6 +870,11 @@ function DashboardPage() {
   }
 
   const formatMonthYear = (month: number, year: number) => {
+    // If we have a period and start day is not 1, show the date range
+    if (data?.period && effectiveStartDay !== 1) {
+      return formatPeriodDisplay(data.period, effectiveStartDay)
+    }
+    // Otherwise show simple month/year
     const date = new Date(year, month - 1)
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
   }
@@ -803,10 +903,12 @@ function DashboardPage() {
     router.navigate({ to: '/dashboard', search: {} })
   }
 
-  // Check if next month is in the future
-  const currentMonth = getCurrentMonth()
-  const currentYear = getCurrentYear()
-  const canGoNext = viewYear < currentYear || (viewYear === currentYear && viewMonth < currentMonth)
+  // Check if next period is in the future (hasn't started yet)
+  const canGoNext = !isFuturePeriod(
+    viewMonth === 12 ? 1 : viewMonth + 1,
+    viewMonth === 12 ? viewYear + 1 : viewYear,
+    effectiveStartDay
+  )
 
   return (
     <div className="min-h-screen bg-background">
@@ -1098,7 +1200,7 @@ function DashboardPage() {
                             </div>
                             <div>
                               <p className="text-muted-foreground">Days</p>
-                              <p className="font-semibold">{data?.recentLogs?.length ?? 0}/{daysInMonth}</p>
+                              <p className="font-semibold">{data?.recentLogs?.length ?? 0}/{daysInPeriod}</p>
                             </div>
                           </div>
                         </div>
@@ -1175,7 +1277,7 @@ function DashboardPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>Daily Budget ({daysInMonth} days)</span>
+                      <span>Daily Budget ({daysInPeriod} days)</span>
                       <span>{formatCurrency(dailyBudget)}/day</span>
                     </div>
                   </div>
@@ -1347,7 +1449,7 @@ function DashboardPage() {
           <DialogHeader>
             <DialogTitle>Set Monthly Budget</DialogTitle>
             <DialogDescription>
-              Enter your total budget for this month. We'll calculate your daily allowance.
+              Enter your total budget for this period. We'll calculate your daily allowance.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSetBudget}>
@@ -1383,9 +1485,58 @@ function DashboardPage() {
                   />
                 </div>
               </div>
+              
+              {/* Month Start Day - Global Default */}
+              <div className="space-y-2">
+                <Label htmlFor="month-start-day">Budget Period Start Day</Label>
+                <Select 
+                  value={selectedMonthStartDay.toString()} 
+                  onValueChange={(v) => setSelectedMonthStartDay(parseInt(v))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select start day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                      <SelectItem key={day} value={day.toString()}>
+                        Day {day}{day === 1 ? ' (Calendar month)' : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  When your budget period starts each month (e.g., payday).
+                  {selectedMonthStartDay !== 1 && ' For months with fewer days, it will use the last available day.'}
+                </p>
+              </div>
+              
+              {/* Override for this specific month */}
+              <div className="space-y-2">
+                <Label htmlFor="budget-start-override">Override for This Period (Optional)</Label>
+                <Select 
+                  value={budgetStartDayOverride?.toString() ?? 'default'} 
+                  onValueChange={(v) => setBudgetStartDayOverride(v === 'default' ? null : parseInt(v))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Use default" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Use default (Day {selectedMonthStartDay})</SelectItem>
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                      <SelectItem key={day} value={day.toString()}>
+                        Day {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Set a different start day for this specific period only.
+                </p>
+              </div>
+              
               {monthlyAmount && parseFloat(monthlyAmount) > 0 && (
                 <p className="text-sm text-muted-foreground">
-                  Daily budget: {formatCurrency(parseFloat(monthlyAmount) / daysInMonth)}
+                  Daily budget: {formatCurrency(parseFloat(monthlyAmount) / daysInPeriod)}
                 </p>
               )}
             </div>

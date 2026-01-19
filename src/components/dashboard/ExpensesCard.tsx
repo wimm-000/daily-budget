@@ -27,6 +27,8 @@ type ExpensesCardProps = {
   formatDate: FormatDateFn
   /** Callback when deleting an expense (async) */
   onDeleteExpense: (id: number) => Promise<void>
+  /** Callback when editing an expense */
+  onEditExpense: (expense: ExpenseItem) => void
 }
 
 /**
@@ -39,6 +41,7 @@ export function ExpensesCard({
   formatCurrency,
   formatDate,
   onDeleteExpense,
+  onEditExpense,
 }: ExpensesCardProps) {
   return (
     <Card>
@@ -54,12 +57,14 @@ export function ExpensesCard({
             expenses={todayExpenses}
             formatCurrency={formatCurrency}
             onDelete={onDeleteExpense}
+            onEdit={onEditExpense}
           />
         ) : (
           <MonthExpensesTable
             expenses={monthExpenses}
             formatCurrency={formatCurrency}
             formatDate={formatDate}
+            onEdit={onEditExpense}
           />
         )}
       </CardContent>
@@ -71,9 +76,10 @@ type TodayExpensesTableProps = {
   expenses: ExpenseItem[] | undefined
   formatCurrency: FormatCurrencyFn
   onDelete: (id: number) => Promise<void>
+  onEdit: (expense: ExpenseItem) => void
 }
 
-function TodayExpensesTable({ expenses, formatCurrency, onDelete }: TodayExpensesTableProps) {
+function TodayExpensesTable({ expenses, formatCurrency, onDelete, onEdit }: TodayExpensesTableProps) {
   const [pendingDelete, setPendingDelete] = useState<ExpenseItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -126,7 +132,12 @@ function TodayExpensesTable({ expenses, formatCurrency, onDelete }: TodayExpense
                   <TableCell>
                     <Icon className={`h-4 w-4 ${config.color}`} />
                   </TableCell>
-                  <TableCell>{expense.description || config.label}</TableCell>
+                  <TableCell
+                    className="cursor-pointer hover:underline"
+                    onClick={() => onEdit(expense)}
+                  >
+                    {expense.description || config.label}
+                  </TableCell>
                   <TableCell className="text-right font-medium">
                     {formatCurrency(expense.amount)}
                   </TableCell>
@@ -163,9 +174,10 @@ type MonthExpensesTableProps = {
   expenses: ExpenseItem[] | undefined
   formatCurrency: FormatCurrencyFn
   formatDate: FormatDateFn
+  onEdit: (expense: ExpenseItem) => void
 }
 
-function MonthExpensesTable({ expenses, formatCurrency, formatDate }: MonthExpensesTableProps) {
+function MonthExpensesTable({ expenses, formatCurrency, formatDate, onEdit }: MonthExpensesTableProps) {
   if (!expenses || expenses.length === 0) {
     return (
       <p className="text-muted-foreground text-center py-4">No expenses recorded this month</p>
@@ -195,7 +207,12 @@ function MonthExpensesTable({ expenses, formatCurrency, formatDate }: MonthExpen
                 <TableCell className="text-muted-foreground whitespace-nowrap">
                   {formatDate(expense.date)}
                 </TableCell>
-                <TableCell>{expense.description || config.label}</TableCell>
+                <TableCell
+                  className="cursor-pointer hover:underline"
+                  onClick={() => onEdit(expense)}
+                >
+                  {expense.description || config.label}
+                </TableCell>
                 <TableCell className="text-right font-medium">
                   {formatCurrency(expense.amount)}
                 </TableCell>

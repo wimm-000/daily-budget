@@ -115,12 +115,29 @@ export const addExpenseSchema = z.object({
 
 export type AddExpenseInput = z.infer<typeof addExpenseSchema>
 
+export const updateExpenseSchema = z.object({
+  id: z.number().int().positive(),
+  amount: positiveAmountSchema,
+  description: z.string().optional(),
+  category: expenseCategorySchema.optional().default('other'),
+})
+
+export type UpdateExpenseInput = z.infer<typeof updateExpenseSchema>
+
 export const addFixedExpenseSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   amount: positiveAmountSchema,
 })
 
 export type AddFixedExpenseInput = z.infer<typeof addFixedExpenseSchema>
+
+export const updateFixedExpenseSchema = z.object({
+  id: z.number().int().positive(),
+  name: z.string().min(1, 'Name is required'),
+  amount: positiveAmountSchema,
+})
+
+export type UpdateFixedExpenseInput = z.infer<typeof updateFixedExpenseSchema>
 
 // =============================================================================
 // Income schemas
@@ -133,6 +150,14 @@ export const addIncomeSchema = z.object({
 })
 
 export type AddIncomeInput = z.infer<typeof addIncomeSchema>
+
+export const updateIncomeSchema = z.object({
+  id: z.number().int().positive(),
+  amount: positiveAmountSchema,
+  description: z.string().optional(),
+})
+
+export type UpdateIncomeInput = z.infer<typeof updateIncomeSchema>
 
 // =============================================================================
 // Search params schemas

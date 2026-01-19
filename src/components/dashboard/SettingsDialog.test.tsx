@@ -65,7 +65,9 @@ describe('SettingsDialog', () => {
     onEditBudget: vi.fn(),
     onAddFixedExpense: vi.fn(),
     onDeleteFixedExpense: createAsyncMock(),
+    onEditFixedExpense: vi.fn(),
     onDeleteIncome: createAsyncMock(),
+    onEditIncome: vi.fn(),
   }
 
   beforeEach(() => {
@@ -402,6 +404,94 @@ describe('SettingsDialog', () => {
       render(<SettingsDialog {...defaultProps} incomes={undefined} />)
       
       expect(screen.getByText('No extra money added this month')).toBeInTheDocument()
+    })
+  })
+
+  describe('edit fixed expense', () => {
+    it('calls onEditFixedExpense when clicking fixed expense name', async () => {
+      const user = userEvent.setup()
+      const onEditFixedExpense = vi.fn()
+      const fixedExpense = createMockFixedExpense({ id: 42, name: 'Netflix' })
+      
+      render(
+        <SettingsDialog 
+          {...defaultProps} 
+          fixedExpenses={[fixedExpense]}
+          onEditFixedExpense={onEditFixedExpense}
+        />
+      )
+
+      await user.click(screen.getByText('Netflix'))
+      
+      expect(onEditFixedExpense).toHaveBeenCalledWith(fixedExpense)
+    })
+
+    it('fixed expense name has clickable styling', () => {
+      const fixedExpense = createMockFixedExpense({ name: 'Rent' })
+      
+      render(
+        <SettingsDialog 
+          {...defaultProps} 
+          fixedExpenses={[fixedExpense]}
+        />
+      )
+
+      const nameCell = screen.getByText('Rent')
+      expect(nameCell).toHaveClass('cursor-pointer')
+      expect(nameCell).toHaveClass('hover:underline')
+    })
+  })
+
+  describe('edit income', () => {
+    it('calls onEditIncome when clicking income description', async () => {
+      const user = userEvent.setup()
+      const onEditIncome = vi.fn()
+      const income = createMockIncome({ id: 42, description: 'Freelance work' })
+      
+      render(
+        <SettingsDialog 
+          {...defaultProps} 
+          incomes={[income]}
+          onEditIncome={onEditIncome}
+        />
+      )
+
+      await user.click(screen.getByText('Freelance work'))
+      
+      expect(onEditIncome).toHaveBeenCalledWith(income)
+    })
+
+    it('calls onEditIncome when clicking "No description" text', async () => {
+      const user = userEvent.setup()
+      const onEditIncome = vi.fn()
+      const income = createMockIncome({ id: 42, description: null })
+      
+      render(
+        <SettingsDialog 
+          {...defaultProps} 
+          incomes={[income]}
+          onEditIncome={onEditIncome}
+        />
+      )
+
+      await user.click(screen.getByText('No description'))
+      
+      expect(onEditIncome).toHaveBeenCalledWith(income)
+    })
+
+    it('income description has clickable styling', () => {
+      const income = createMockIncome({ description: 'Bonus' })
+      
+      render(
+        <SettingsDialog 
+          {...defaultProps} 
+          incomes={[income]}
+        />
+      )
+
+      const descriptionCell = screen.getByText('Bonus')
+      expect(descriptionCell).toHaveClass('cursor-pointer')
+      expect(descriptionCell).toHaveClass('hover:underline')
     })
   })
 })

@@ -44,6 +44,7 @@ describe('ExpensesCard', () => {
     formatCurrency: mockFormatCurrency,
     formatDate: mockFormatDate,
     onDeleteExpense: createAsyncMock(),
+    onEditExpense: vi.fn(),
   }
 
   describe('rendering', () => {
@@ -437,6 +438,81 @@ describe('ExpensesCard', () => {
       expenses.forEach((expense) => {
         expect(screen.getByText(expense.description!)).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('edit expense', () => {
+    it('calls onEditExpense when clicking expense description in today expenses', async () => {
+      const user = userEvent.setup()
+      const onEditExpense = vi.fn()
+      const expense = createMockExpense({ id: 42, description: 'Coffee', amount: 5.00 })
+      
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={true}
+          todayExpenses={[expense]}
+          onEditExpense={onEditExpense}
+        />
+      )
+
+      await user.click(screen.getByText('Coffee'))
+      
+      expect(onEditExpense).toHaveBeenCalledWith(expense)
+    })
+
+    it('calls onEditExpense when clicking expense description in month expenses', async () => {
+      const user = userEvent.setup()
+      const onEditExpense = vi.fn()
+      const expense = createMockExpense({ id: 42, description: 'Lunch', amount: 12.00 })
+      
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={false}
+          monthExpenses={[expense]}
+          onEditExpense={onEditExpense}
+        />
+      )
+
+      await user.click(screen.getByText('Lunch'))
+      
+      expect(onEditExpense).toHaveBeenCalledWith(expense)
+    })
+
+    it('calls onEditExpense when clicking category label (no description)', async () => {
+      const user = userEvent.setup()
+      const onEditExpense = vi.fn()
+      const expense = createMockExpense({ id: 42, description: null, category: 'food' })
+      
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={true}
+          todayExpenses={[expense]}
+          onEditExpense={onEditExpense}
+        />
+      )
+
+      await user.click(screen.getByText('Food & Drinks'))
+      
+      expect(onEditExpense).toHaveBeenCalledWith(expense)
+    })
+
+    it('expense description has clickable styling', () => {
+      const expense = createMockExpense({ description: 'Coffee' })
+      
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={true}
+          todayExpenses={[expense]}
+        />
+      )
+
+      const descriptionCell = screen.getByText('Coffee')
+      expect(descriptionCell).toHaveClass('cursor-pointer')
+      expect(descriptionCell).toHaveClass('hover:underline')
     })
   })
 })

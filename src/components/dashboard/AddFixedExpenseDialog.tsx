@@ -21,10 +21,12 @@ type AddFixedExpenseDialogProps = {
   onFixedExpenseAmountChange: (value: string) => void
   isLoading: boolean
   onSubmit: (e: React.FormEvent) => void
+  /** Whether the dialog is in edit mode */
+  mode?: 'add' | 'edit'
 }
 
 /**
- * Dialog for adding a fixed monthly expense
+ * Dialog for adding or editing a fixed monthly expense
  */
 export function AddFixedExpenseDialog({
   open,
@@ -36,14 +38,23 @@ export function AddFixedExpenseDialog({
   onFixedExpenseAmountChange,
   isLoading,
   onSubmit,
+  mode = 'add',
 }: AddFixedExpenseDialogProps) {
+  const isEditMode = mode === 'edit'
+  const title = isEditMode ? 'Edit Fixed Expense' : 'Add Fixed Expense'
+  const description = isEditMode
+    ? 'Update the fixed expense details.'
+    : 'Add a recurring monthly expense like rent, subscriptions, or bills.'
+  const submitText = isEditMode ? 'Save Changes' : 'Add Fixed Expense'
+  const loadingText = isEditMode ? 'Saving...' : 'Adding...'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Fixed Expense</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Add a recurring monthly expense like rent, subscriptions, or bills.
+            {description}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit}>
@@ -83,7 +94,7 @@ export function AddFixedExpenseDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Adding...' : 'Add Fixed Expense'}
+              {isLoading ? loadingText : submitText}
             </Button>
           </DialogFooter>
         </form>

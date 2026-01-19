@@ -21,12 +21,15 @@ import {
   setBudget,
   addExpense,
   deleteExpense,
+  updateExpense,
   updateCurrency,
   updateMonthStartDay,
   addFixedExpense,
   deleteFixedExpense,
+  updateFixedExpense,
   addIncome,
   deleteIncome,
+  updateIncome,
 } from '@/server/dashboard'
 
 import { AppHeader } from '@/components/AppHeader'
@@ -47,6 +50,7 @@ import {
   AddFixedExpenseDialog,
   SettingsDialog,
 } from '@/components/dashboard'
+import type { ExpenseItem, FixedExpenseItem, IncomeItem } from '@/components/dashboard/types'
 
 // =============================================================================
 // Route
@@ -74,6 +78,11 @@ function DashboardPage() {
   const [isFixedExpenseOpen, setIsFixedExpenseOpen] = useState(false)
   const [isIncomeOpen, setIsIncomeOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
+  // Edit state - track which item is being edited (null = add mode)
+  const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null)
+  const [editingFixedExpense, setEditingFixedExpense] = useState<FixedExpenseItem | null>(null)
+  const [editingIncome, setEditingIncome] = useState<IncomeItem | null>(null)
 
   // Form states
   const [monthlyAmount, setMonthlyAmount] = useState(data?.budget?.monthlyAmount?.toString() || '')
@@ -187,23 +196,45 @@ function DashboardPage() {
     setIsLoading(true)
 
     try {
-      await addExpense({
-        data: {
-          amount: parseFloat(expenseAmount),
-          description: expenseDescription || undefined,
-          category: expenseCategory,
-        },
-      })
+      if (editingExpense) {
+        // Edit mode
+        await updateExpense({
+          data: {
+            id: editingExpense.id,
+            amount: parseFloat(expenseAmount),
+            description: expenseDescription || undefined,
+            category: expenseCategory,
+          },
+        })
+      } else {
+        // Add mode
+        await addExpense({
+          data: {
+            amount: parseFloat(expenseAmount),
+            description: expenseDescription || undefined,
+            category: expenseCategory,
+          },
+        })
+      }
       setIsExpenseOpen(false)
+      setEditingExpense(null)
       setExpenseAmount('')
       setExpenseDescription('')
       setExpenseCategory('other')
       router.invalidate()
     } catch (err) {
-      console.error('Failed to add expense:', err)
+      console.error('Failed to save expense:', err)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleEditExpense = (expense: ExpenseItem) => {
+    setExpenseAmount(expense.amount.toString())
+    setExpenseDescription(expense.description || '')
+    setExpenseCategory((expense.category as ExpenseCategory) || 'other')
+    setEditingExpense(expense)
+    setIsExpenseOpen(true)
   }
 
   const handleDeleteExpense = async (id: number) => {
@@ -220,21 +251,41 @@ function DashboardPage() {
     setIsLoading(true)
 
     try {
-      await addFixedExpense({
-        data: {
-          name: fixedExpenseName,
-          amount: parseFloat(fixedExpenseAmount),
-        },
-      })
+      if (editingFixedExpense) {
+        // Edit mode
+        await updateFixedExpense({
+          data: {
+            id: editingFixedExpense.id,
+            name: fixedExpenseName,
+            amount: parseFloat(fixedExpenseAmount),
+          },
+        })
+      } else {
+        // Add mode
+        await addFixedExpense({
+          data: {
+            name: fixedExpenseName,
+            amount: parseFloat(fixedExpenseAmount),
+          },
+        })
+      }
       setIsFixedExpenseOpen(false)
+      setEditingFixedExpense(null)
       setFixedExpenseName('')
       setFixedExpenseAmount('')
       router.invalidate()
     } catch (err) {
-      console.error('Failed to add fixed expense:', err)
+      console.error('Failed to save fixed expense:', err)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleEditFixedExpense = (expense: FixedExpenseItem) => {
+    setFixedExpenseName(expense.name)
+    setFixedExpenseAmount(expense.amount.toString())
+    setEditingFixedExpense(expense)
+    setIsFixedExpenseOpen(true)
   }
 
   const handleDeleteFixedExpense = async (id: number) => {
@@ -251,21 +302,41 @@ function DashboardPage() {
     setIsLoading(true)
 
     try {
-      await addIncome({
-        data: {
-          amount: parseFloat(incomeAmount),
-          description: incomeDescription || undefined,
-        },
-      })
+      if (editingIncome) {
+        // Edit mode
+        await updateIncome({
+          data: {
+            id: editingIncome.id,
+            amount: parseFloat(incomeAmount),
+            description: incomeDescription || undefined,
+          },
+        })
+      } else {
+        // Add mode
+        await addIncome({
+          data: {
+            amount: parseFloat(incomeAmount),
+            description: incomeDescription || undefined,
+          },
+        })
+      }
       setIsIncomeOpen(false)
+      setEditingIncome(null)
       setIncomeAmount('')
       setIncomeDescription('')
       router.invalidate()
     } catch (err) {
-      console.error('Failed to add income:', err)
+      console.error('Failed to save income:', err)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleEditIncome = (income: IncomeItem) => {
+    setIncomeAmount(income.amount.toString())
+    setIncomeDescription(income.description || '')
+    setEditingIncome(income)
+    setIsIncomeOpen(true)
   }
 
   const handleDeleteIncome = async (id: number) => {
@@ -363,6 +434,7 @@ function DashboardPage() {
                 formatCurrency={formatCurrency}
                 formatDate={formatDate}
                 onDeleteExpense={handleDeleteExpense}
+                onEditExpense={handleEditExpense}
               />
 
               {/* Daily Log History */}
@@ -397,7 +469,15 @@ function DashboardPage() {
 
       <AddExpenseDialog
         open={isExpenseOpen}
-        onOpenChange={setIsExpenseOpen}
+        onOpenChange={(open) => {
+          setIsExpenseOpen(open)
+          if (!open) {
+            setEditingExpense(null)
+            setExpenseAmount('')
+            setExpenseDescription('')
+            setExpenseCategory('other')
+          }
+        }}
         currency={currency}
         expenseAmount={expenseAmount}
         onExpenseAmountChange={setExpenseAmount}
@@ -407,11 +487,19 @@ function DashboardPage() {
         onExpenseCategoryChange={setExpenseCategory}
         isLoading={isLoading}
         onSubmit={handleAddExpense}
+        mode={editingExpense ? 'edit' : 'add'}
       />
 
       <AddIncomeDialog
         open={isIncomeOpen}
-        onOpenChange={setIsIncomeOpen}
+        onOpenChange={(open) => {
+          setIsIncomeOpen(open)
+          if (!open) {
+            setEditingIncome(null)
+            setIncomeAmount('')
+            setIncomeDescription('')
+          }
+        }}
         currency={currency}
         incomeAmount={incomeAmount}
         onIncomeAmountChange={setIncomeAmount}
@@ -419,6 +507,7 @@ function DashboardPage() {
         onIncomeDescriptionChange={setIncomeDescription}
         isLoading={isLoading}
         onSubmit={handleAddIncome}
+        mode={editingIncome ? 'edit' : 'add'}
       />
 
       <SettingsDialog
@@ -436,12 +525,21 @@ function DashboardPage() {
         }}
         onAddFixedExpense={() => setIsFixedExpenseOpen(true)}
         onDeleteFixedExpense={handleDeleteFixedExpense}
+        onEditFixedExpense={handleEditFixedExpense}
         onDeleteIncome={handleDeleteIncome}
+        onEditIncome={handleEditIncome}
       />
 
       <AddFixedExpenseDialog
         open={isFixedExpenseOpen}
-        onOpenChange={setIsFixedExpenseOpen}
+        onOpenChange={(open) => {
+          setIsFixedExpenseOpen(open)
+          if (!open) {
+            setEditingFixedExpense(null)
+            setFixedExpenseName('')
+            setFixedExpenseAmount('')
+          }
+        }}
         currency={currency}
         fixedExpenseName={fixedExpenseName}
         onFixedExpenseNameChange={setFixedExpenseName}
@@ -449,6 +547,7 @@ function DashboardPage() {
         onFixedExpenseAmountChange={setFixedExpenseAmount}
         isLoading={isLoading}
         onSubmit={handleAddFixedExpense}
+        mode={editingFixedExpense ? 'edit' : 'add'}
       />
     </div>
   )

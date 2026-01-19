@@ -33,7 +33,9 @@ type SettingsDialogProps = {
   onEditBudget: () => void
   onAddFixedExpense: () => void
   onDeleteFixedExpense: (id: number) => Promise<void>
+  onEditFixedExpense: (expense: FixedExpenseItem) => void
   onDeleteIncome: (id: number) => Promise<void>
+  onEditIncome: (income: IncomeItem) => void
 }
 
 type PendingDelete =
@@ -56,7 +58,9 @@ export function SettingsDialog({
   onEditBudget,
   onAddFixedExpense,
   onDeleteFixedExpense,
+  onEditFixedExpense,
   onDeleteIncome,
+  onEditIncome,
 }: SettingsDialogProps) {
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -153,7 +157,12 @@ export function SettingsDialog({
                     <TableBody>
                       {fixedExpenses.map((expense) => (
                         <TableRow key={expense.id}>
-                          <TableCell>{expense.name}</TableCell>
+                          <TableCell
+                            className="cursor-pointer hover:underline"
+                            onClick={() => onEditFixedExpense(expense)}
+                          >
+                            {expense.name}
+                          </TableCell>
                           <TableCell className="text-right font-medium">
                             {formatCurrency(expense.amount)}
                           </TableCell>
@@ -210,7 +219,12 @@ export function SettingsDialog({
                     <TableBody>
                       {incomes.map((income) => (
                         <TableRow key={income.id}>
-                          <TableCell>{income.description || 'No description'}</TableCell>
+                          <TableCell
+                            className="cursor-pointer hover:underline"
+                            onClick={() => onEditIncome(income)}
+                          >
+                            {income.description || 'No description'}
+                          </TableCell>
                           <TableCell className="text-right font-medium text-green-600">
                             +{formatCurrency(income.amount)}
                           </TableCell>

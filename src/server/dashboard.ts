@@ -22,14 +22,20 @@ import {
 import {
   setBudgetSchema,
   addExpenseSchema,
+  updateExpenseSchema,
   addFixedExpenseSchema,
+  updateFixedExpenseSchema,
   addIncomeSchema,
+  updateIncomeSchema,
   updateMonthStartDaySchema,
   updateCurrencySchema,
   type SetBudgetInput,
   type AddExpenseInput,
+  type UpdateExpenseInput,
   type AddFixedExpenseInput,
+  type UpdateFixedExpenseInput,
   type AddIncomeInput,
+  type UpdateIncomeInput,
   type UpdateMonthStartDayInput,
   type UpdateCurrencyInput,
 } from '@/lib/validations'
@@ -567,6 +573,131 @@ export const deleteIncome = createServerFn({
     }
 
     await db.delete(incomes).where(and(eq(incomes.id, data.id), eq(incomes.userId, session.id)))
+
+    return { success: true }
+  })
+
+/**
+ * Update an existing expense
+ */
+export const updateExpense = createServerFn({
+  method: 'POST',
+})
+  .inputValidator((data: UpdateExpenseInput) => updateExpenseSchema.parse(data))
+  .handler(async ({ data }: { data: UpdateExpenseInput }) => {
+    const session = await getSession()
+    if (!session) {
+      throw new Error('UNAUTHORIZED')
+    }
+
+    const today = getToday()
+
+    // Get the existing expense to check ownership and calculate daily log adjustment
+    const existingExpense = await db.query.expenses.findFirst({
+      where: and(eq(expenses.id, data.id), eq(expenses.userId, session.id)),
+    })
+
+    if (!existingExpense) {
+      throw new Error('Expense not found')
+    }
+
+    const amountDifference = data.amount - existingExpense.amount
+
+    // Update the expense
+    await db
+      .update(expenses)
+      .set({
+        amount: data.amount,
+        description: data.description || null,
+        category: data.category,
+      })
+      .where(eq(expenses.id, data.id))
+
+    // If this expense is from today, update the daily log
+    if (existingExpense.date === today) {
+      const todayLog = await db.query.dailyLogs.findFirst({
+        where: and(eq(dailyLogs.userId, session.id), eq(dailyLogs.date, today)),
+      })
+
+      if (todayLog) {
+        const newTotalSpent = todayLog.totalSpent + amountDifference
+        const newRemaining = todayLog.dailyBudget + todayLog.carryover - newTotalSpent
+
+        await db
+          .update(dailyLogs)
+          .set({
+            totalSpent: newTotalSpent,
+            remaining: newRemaining,
+          })
+          .where(eq(dailyLogs.id, todayLog.id))
+      }
+    }
+
+    return { success: true }
+  })
+
+/**
+ * Update a fixed expense
+ */
+export const updateFixedExpense = createServerFn({
+  method: 'POST',
+})
+  .inputValidator((data: UpdateFixedExpenseInput) => updateFixedExpenseSchema.parse(data))
+  .handler(async ({ data }: { data: UpdateFixedExpenseInput }) => {
+    const session = await getSession()
+    if (!session) {
+      throw new Error('UNAUTHORIZED')
+    }
+
+    // Verify ownership
+    const existingExpense = await db.query.fixedExpenses.findFirst({
+      where: and(eq(fixedExpenses.id, data.id), eq(fixedExpenses.userId, session.id)),
+    })
+
+    if (!existingExpense) {
+      throw new Error('Fixed expense not found')
+    }
+
+    await db
+      .update(fixedExpenses)
+      .set({
+        name: data.name,
+        amount: data.amount,
+      })
+      .where(eq(fixedExpenses.id, data.id))
+
+    return { success: true }
+  })
+
+/**
+ * Update an income
+ */
+export const updateIncome = createServerFn({
+  method: 'POST',
+})
+  .inputValidator((data: UpdateIncomeInput) => updateIncomeSchema.parse(data))
+  .handler(async ({ data }: { data: UpdateIncomeInput }) => {
+    const session = await getSession()
+    if (!session) {
+      throw new Error('UNAUTHORIZED')
+    }
+
+    // Verify ownership
+    const existingIncome = await db.query.incomes.findFirst({
+      where: and(eq(incomes.id, data.id), eq(incomes.userId, session.id)),
+    })
+
+    if (!existingIncome) {
+      throw new Error('Income not found')
+    }
+
+    await db
+      .update(incomes)
+      .set({
+        amount: data.amount,
+        description: data.description || null,
+      })
+      .where(eq(incomes.id, data.id))
 
     return { success: true }
   })

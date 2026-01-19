@@ -32,10 +32,12 @@ type AddExpenseDialogProps = {
   onExpenseCategoryChange: (value: ExpenseCategory) => void
   isLoading: boolean
   onSubmit: (e: React.FormEvent) => void
+  /** Whether the dialog is in edit mode */
+  mode?: 'add' | 'edit'
 }
 
 /**
- * Dialog for adding a new expense
+ * Dialog for adding or editing an expense
  */
 export function AddExpenseDialog({
   open,
@@ -49,13 +51,22 @@ export function AddExpenseDialog({
   onExpenseCategoryChange,
   isLoading,
   onSubmit,
+  mode = 'add',
 }: AddExpenseDialogProps) {
+  const isEditMode = mode === 'edit'
+  const title = isEditMode ? 'Edit Expense' : 'Add Expense'
+  const description = isEditMode
+    ? 'Update the expense details.'
+    : 'Record a new expense for today.'
+  const submitText = isEditMode ? 'Save Changes' : 'Add Expense'
+  const loadingText = isEditMode ? 'Saving...' : 'Adding...'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Expense</DialogTitle>
-          <DialogDescription>Record a new expense for today.</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit}>
           <div className="space-y-4 py-4">
@@ -118,7 +129,7 @@ export function AddExpenseDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Adding...' : 'Add Expense'}
+              {isLoading ? loadingText : submitText}
             </Button>
           </DialogFooter>
         </form>

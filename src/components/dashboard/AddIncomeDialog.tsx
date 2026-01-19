@@ -21,10 +21,12 @@ type AddIncomeDialogProps = {
   onIncomeDescriptionChange: (value: string) => void
   isLoading: boolean
   onSubmit: (e: React.FormEvent) => void
+  /** Whether the dialog is in edit mode */
+  mode?: 'add' | 'edit'
 }
 
 /**
- * Dialog for adding income/extra money
+ * Dialog for adding or editing income/extra money
  */
 export function AddIncomeDialog({
   open,
@@ -36,13 +38,22 @@ export function AddIncomeDialog({
   onIncomeDescriptionChange,
   isLoading,
   onSubmit,
+  mode = 'add',
 }: AddIncomeDialogProps) {
+  const isEditMode = mode === 'edit'
+  const title = isEditMode ? 'Edit Money' : 'Add Money'
+  const description = isEditMode
+    ? 'Update the income details.'
+    : "Add extra income or money to this month's budget."
+  const submitText = isEditMode ? 'Save Changes' : 'Add Money'
+  const loadingText = isEditMode ? 'Saving...' : 'Adding...'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Money</DialogTitle>
-          <DialogDescription>Add extra income or money to this month's budget.</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit}>
           <div className="space-y-4 py-4">
@@ -80,7 +91,7 @@ export function AddIncomeDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Adding...' : 'Add Money'}
+              {isLoading ? loadingText : submitText}
             </Button>
           </DialogFooter>
         </form>

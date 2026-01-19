@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import { MonthProgressCircle } from './BudgetProgressCircle'
 import type { FormatCurrencyFn, ExpenseItem, DailyLogItem } from './types'
@@ -25,6 +26,7 @@ export function PastMonthSummaryCard({
   daysInPeriod,
   formatCurrency,
 }: PastMonthSummaryCardProps) {
+  const { t } = useTranslation()
   const monthlyBudget = availableForDaily
   const spent = monthExpenses?.reduce((sum, e) => sum + e.amount, 0) ?? 0
   const expenseCount = monthExpenses?.length ?? 0
@@ -41,18 +43,18 @@ export function PastMonthSummaryCard({
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
               <div>
-                <p className="text-sm text-muted-foreground">Total Spent</p>
+                <p className="text-sm text-muted-foreground">{t('pastMonth.totalSpent')}</p>
                 <div className="text-2xl sm:text-3xl font-bold">{formatCurrency(spent)}</div>
-                <p className="text-xs text-muted-foreground mt-1">{expenseCount} expense(s)</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('pastMonth.expenses', { count: expenseCount })}</p>
               </div>
 
               <div className="flex gap-4 sm:gap-6 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Budget</p>
+                  <p className="text-muted-foreground">{t('dashboard.budget')}</p>
                   <p className="font-semibold">{formatCurrency(availableForDaily)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Days</p>
+                  <p className="text-muted-foreground">{t('pastMonth.days')}</p>
                   <p className="font-semibold">
                     {daysTracked}/{daysInPeriod}
                   </p>

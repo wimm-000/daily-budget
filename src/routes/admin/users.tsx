@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { createFileRoute, useRouter, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
@@ -184,6 +185,7 @@ export const Route = createFileRoute('/admin/users')({
 })
 
 function AdminUsersPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const userList = Route.useLoaderData()
 
@@ -214,14 +216,15 @@ function AdminUsersPage() {
     try {
       const result = await createUser({ data: { email, password, role } })
       if (!result.success) {
-        setError(result.error || 'Failed to create user')
+        const errorMsg = 'error' in result ? result.error : t('admin.failedToCreate')
+        setError(errorMsg === 'Email already exists' ? t('admin.emailExists') : (errorMsg || t('admin.failedToCreate')))
         return
       }
       setIsCreateOpen(false)
       resetForm()
       router.invalidate()
     } catch (err) {
-      setError('An unexpected error occurred')
+      setError(t('login.unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -243,14 +246,14 @@ function AdminUsersPage() {
         },
       })
       if (!result.success) {
-        setError('Failed to update user')
+        setError(t('admin.failedToUpdate'))
         return
       }
       setIsEditOpen(false)
       resetForm()
       router.invalidate()
     } catch (err) {
-      setError('An unexpected error occurred')
+      setError(t('login.unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -298,15 +301,15 @@ function AdminUsersPage() {
               <div className="flex items-center gap-2">
                 <Users className="h-6 w-6" />
                 <div>
-                  <CardTitle>User Management</CardTitle>
+                  <CardTitle>{t('admin.title')}</CardTitle>
                   <CardDescription>
-                    Manage user accounts and permissions
+                    {t('admin.description')}
                   </CardDescription>
                 </div>
               </div>
               <Button onClick={() => { resetForm(); setIsCreateOpen(true) }} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
-                Add User
+                {t('admin.addUser')}
               </Button>
             </div>
           </CardHeader>
@@ -314,9 +317,9 @@ function AdminUsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead>{t('admin.email')}</TableHead>
+                  <TableHead>{t('admin.role')}</TableHead>
+                  <TableHead>{t('admin.created')}</TableHead>
                   <TableHead className="w-[70px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -326,7 +329,7 @@ function AdminUsersPage() {
                     <TableCell className="font-medium">{user.email}</TableCell>
                     <TableCell>
                       <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                        {user.role}
+                        {user.role === 'admin' ? t('admin.adminRole') : t('admin.user')}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -344,14 +347,14 @@ function AdminUsersPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(user)}>
                             <Pencil className="h-4 w-4 mr-2" />
-                            Edit
+                            {t('common.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => openDelete(user)}
                             className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
+                            {t('common.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -367,9 +370,9 @@ function AdminUsersPage() {
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create User</DialogTitle>
+              <DialogTitle>{t('admin.createUser')}</DialogTitle>
               <DialogDescription>
-                Add a new user account to the system.
+                {t('admin.createDescription')}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate}>
@@ -380,7 +383,7 @@ function AdminUsersPage() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="create-email">Email</Label>
+                  <Label htmlFor="create-email">{t('admin.email')}</Label>
                   <Input
                     id="create-email"
                     type="email"
@@ -390,7 +393,7 @@ function AdminUsersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="create-password">Password</Label>
+                  <Label htmlFor="create-password">{t('login.password')}</Label>
                   <Input
                     id="create-password"
                     type="password"
@@ -401,24 +404,24 @@ function AdminUsersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="create-role">Role</Label>
+                  <Label htmlFor="create-role">{t('admin.role')}</Label>
                   <select
                     id="create-role"
                     value={role}
                     onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
+                    <option value="user">{t('admin.user')}</option>
+                    <option value="admin">{t('admin.adminRole')}</option>
                   </select>
                 </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Creating...' : 'Create User'}
+                  {isLoading ? t('admin.creating') : t('admin.createUser')}
                 </Button>
               </DialogFooter>
             </form>
@@ -429,9 +432,9 @@ function AdminUsersPage() {
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
+              <DialogTitle>{t('admin.editUser')}</DialogTitle>
               <DialogDescription>
-                Update user account details.
+                {t('admin.editDescription')}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleEdit}>
@@ -442,7 +445,7 @@ function AdminUsersPage() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-email">Email</Label>
+                  <Label htmlFor="edit-email">{t('admin.email')}</Label>
                   <Input
                     id="edit-email"
                     type="email"
@@ -452,34 +455,34 @@ function AdminUsersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-password">Password</Label>
+                  <Label htmlFor="edit-password">{t('login.password')}</Label>
                   <Input
                     id="edit-password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Leave blank to keep current"
+                    placeholder={t('admin.passwordPlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-role">Role</Label>
+                  <Label htmlFor="edit-role">{t('admin.role')}</Label>
                   <select
                     id="edit-role"
                     value={role}
                     onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
+                    <option value="user">{t('admin.user')}</option>
+                    <option value="admin">{t('admin.adminRole')}</option>
                   </select>
                 </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Saving...' : 'Save Changes'}
+                  {isLoading ? t('common.saving') : t('common.saveChanges')}
                 </Button>
               </DialogFooter>
             </form>
@@ -490,19 +493,18 @@ function AdminUsersPage() {
         <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete User</AlertDialogTitle>
+              <AlertDialogTitle>{t('admin.deleteUser')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete {selectedUser?.email}? This action
-                cannot be undone.
+                {t('admin.deleteDescription', { email: selectedUser?.email })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {isLoading ? 'Deleting...' : 'Delete'}
+                {isLoading ? t('common.deleting') : t('common.delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

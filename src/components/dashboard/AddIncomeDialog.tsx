@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,13 +41,14 @@ export function AddIncomeDialog({
   onSubmit,
   mode = 'add',
 }: AddIncomeDialogProps) {
+  const { t } = useTranslation()
   const isEditMode = mode === 'edit'
-  const title = isEditMode ? 'Edit Money' : 'Add Money'
+  const title = isEditMode ? t('addIncome.editTitle') : t('addIncome.addTitle')
   const description = isEditMode
-    ? 'Update the income details.'
-    : "Add extra income or money to this month's budget."
-  const submitText = isEditMode ? 'Save Changes' : 'Add Money'
-  const loadingText = isEditMode ? 'Saving...' : 'Adding...'
+    ? t('addIncome.editDescription')
+    : t('addIncome.addDescription')
+  const submitText = isEditMode ? t('common.saveChanges') : t('addIncome.addTitle')
+  const loadingText = isEditMode ? t('common.saving') : t('common.adding')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -58,7 +60,7 @@ export function AddIncomeDialog({
         <form onSubmit={onSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="income-amount">Amount</Label>
+              <Label htmlFor="income-amount">{t('common.amount')}</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {currency === 'EUR' ? '\u20AC' : '$'}
@@ -77,18 +79,18 @@ export function AddIncomeDialog({
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="income-description">Description (optional)</Label>
+              <Label htmlFor="income-description">{t('common.descriptionOptional')}</Label>
               <Input
                 id="income-description"
                 value={incomeDescription}
                 onChange={(e) => onIncomeDescriptionChange(e.target.value)}
-                placeholder="Bonus, gift, refund..."
+                placeholder={t('addIncome.placeholder')}
               />
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? loadingText : submitText}

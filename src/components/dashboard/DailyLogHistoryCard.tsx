@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -29,11 +30,15 @@ export function DailyLogHistoryCard({
   formatCurrency,
   formatDate,
 }: DailyLogHistoryCardProps) {
+  const { t } = useTranslation()
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">{isCurrentMonth ? 'Recent Days' : 'Daily History'}</CardTitle>
-        <CardDescription>Your spending history and carryover</CardDescription>
+        <CardTitle className="text-lg">
+          {isCurrentMonth ? t('dailyLog.recentDays') : t('dailyLog.dailyHistory')}
+        </CardTitle>
+        <CardDescription>{t('dailyLog.historyDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         {recentLogs && recentLogs.length > 0 ? (
@@ -41,13 +46,13 @@ export function DailyLogHistoryCard({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap">Date</TableHead>
-                  <TableHead className="text-right whitespace-nowrap">Budget</TableHead>
+                  <TableHead className="whitespace-nowrap">{t('common.date')}</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">{t('dashboard.budget')}</TableHead>
                   <TableHead className="text-right whitespace-nowrap hidden sm:table-cell">
-                    Carryover
+                    {t('dailyLog.carryover')}
                   </TableHead>
-                  <TableHead className="text-right whitespace-nowrap">Spent</TableHead>
-                  <TableHead className="text-right whitespace-nowrap">Remaining</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">{t('dashboard.spent')}</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">{t('dailyLog.remaining')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -87,7 +92,7 @@ export function DailyLogHistoryCard({
             </Table>
           </div>
         ) : (
-          <p className="text-muted-foreground text-center py-4">No history yet</p>
+          <p className="text-muted-foreground text-center py-4">{t('dailyLog.noHistory')}</p>
         )}
       </CardContent>
     </Card>

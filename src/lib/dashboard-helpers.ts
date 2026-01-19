@@ -100,10 +100,12 @@ export function formatCurrency(
 
 /**
  * Format a date string (YYYY-MM-DD) for display
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @param locale - Locale for formatting (defaults to 'en-US')
  */
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string, locale: string = 'en-US'): string {
   const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(locale, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -112,10 +114,13 @@ export function formatDate(dateStr: string): string {
 
 /**
  * Format month and year for display (e.g., "January 2026")
+ * @param month - Month number (1-12)
+ * @param year - Year
+ * @param locale - Locale for formatting (defaults to 'en-US')
  */
-export function formatMonthYear(month: number, year: number): string {
+export function formatMonthYear(month: number, year: number, locale: string = 'en-US'): string {
   const date = new Date(year, month - 1)
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
 }
 
 /**

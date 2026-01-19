@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
 import {
   AlertDialog,
@@ -36,6 +37,8 @@ export function ConfirmDeleteDialog({
   onConfirm,
   isLoading = false,
 }: ConfirmDeleteDialogProps) {
+  const { t } = useTranslation()
+
   const handleOpenChange = (newOpen: boolean) => {
     // Prevent closing the dialog while loading
     if (isLoading) return
@@ -46,13 +49,13 @@ export function ConfirmDeleteDialog({
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete {itemType}?</AlertDialogTitle>
+          <AlertDialogTitle>{t('confirmDelete.title', { itemType })}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{itemName}"? This action cannot be undone.
+            {t('confirmDelete.description', { itemName })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault()
@@ -64,7 +67,7 @@ export function ConfirmDeleteDialog({
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              'Delete'
+              t('common.delete')
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

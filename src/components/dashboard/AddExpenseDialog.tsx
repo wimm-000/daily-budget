@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -53,13 +54,14 @@ export function AddExpenseDialog({
   onSubmit,
   mode = 'add',
 }: AddExpenseDialogProps) {
+  const { t } = useTranslation()
   const isEditMode = mode === 'edit'
-  const title = isEditMode ? 'Edit Expense' : 'Add Expense'
+  const title = isEditMode ? t('addExpense.editTitle') : t('addExpense.addTitle')
   const description = isEditMode
-    ? 'Update the expense details.'
-    : 'Record a new expense for today.'
-  const submitText = isEditMode ? 'Save Changes' : 'Add Expense'
-  const loadingText = isEditMode ? 'Saving...' : 'Adding...'
+    ? t('addExpense.editDescription')
+    : t('addExpense.addDescription')
+  const submitText = isEditMode ? t('common.saveChanges') : t('addExpense.addTitle')
+  const loadingText = isEditMode ? t('common.saving') : t('common.adding')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,7 +73,7 @@ export function AddExpenseDialog({
         <form onSubmit={onSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="expense-amount">Amount</Label>
+              <Label htmlFor="expense-amount">{t('common.amount')}</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {currency === 'EUR' ? '\u20AC' : '$'}
@@ -90,13 +92,13 @@ export function AddExpenseDialog({
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="expense-category">Category</Label>
+              <Label htmlFor="expense-category">{t('addExpense.category')}</Label>
               <Select
                 value={expenseCategory}
                 onValueChange={(v) => onExpenseCategoryChange(v as ExpenseCategory)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={t('addExpense.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
                   {EXPENSE_CATEGORIES.map((cat) => {
@@ -106,7 +108,7 @@ export function AddExpenseDialog({
                       <SelectItem key={cat} value={cat}>
                         <div className="flex items-center gap-2">
                           <Icon className={`h-4 w-4 ${config.color}`} />
-                          <span>{config.label}</span>
+                          <span>{t(`categories.${cat}`)}</span>
                         </div>
                       </SelectItem>
                     )
@@ -115,18 +117,18 @@ export function AddExpenseDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="expense-description">Description (optional)</Label>
+              <Label htmlFor="expense-description">{t('common.descriptionOptional')}</Label>
               <Input
                 id="expense-description"
                 value={expenseDescription}
                 onChange={(e) => onExpenseDescriptionChange(e.target.value)}
-                placeholder="Coffee, lunch, groceries..."
+                placeholder={t('addExpense.placeholder')}
               />
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? loadingText : submitText}

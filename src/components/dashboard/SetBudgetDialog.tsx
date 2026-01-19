@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -54,34 +55,36 @@ export function SetBudgetDialog({
   isLoading,
   onSubmit,
 }: SetBudgetDialogProps) {
+  const { t } = useTranslation()
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Set Monthly Budget</DialogTitle>
+          <DialogTitle>{t('setBudget.title')}</DialogTitle>
           <DialogDescription>
-            Enter your total budget for this period. We'll calculate your daily allowance.
+            {t('setBudget.description')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="currency">Currency</Label>
+              <Label htmlFor="currency">{t('setBudget.currency')}</Label>
               <Select
                 value={selectedCurrency}
                 onValueChange={(v) => onCurrencyChange(v as Currency)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select currency" />
+                  <SelectValue placeholder={t('setBudget.selectCurrency')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">$ USD (US Dollar)</SelectItem>
-                  <SelectItem value="EUR">&#8364; EUR (Euro)</SelectItem>
+                  <SelectItem value="USD">{t('setBudget.usd')}</SelectItem>
+                  <SelectItem value="EUR">{t('setBudget.eur')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="monthly-amount">Monthly Budget</Label>
+              <Label htmlFor="monthly-amount">{t('setBudget.monthlyBudget')}</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {selectedCurrency === 'EUR' ? '\u20AC' : '$'}
@@ -102,33 +105,32 @@ export function SetBudgetDialog({
 
             {/* Month Start Day - Global Default */}
             <div className="space-y-2">
-              <Label htmlFor="month-start-day">Budget Period Start Day</Label>
+              <Label htmlFor="month-start-day">{t('setBudget.periodStartDay')}</Label>
               <Select
                 value={selectedMonthStartDay.toString()}
                 onValueChange={(v) => onMonthStartDayChange(parseInt(v))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select start day" />
+                  <SelectValue placeholder={t('setBudget.selectStartDay')} />
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
                     <SelectItem key={day} value={day.toString()}>
-                      Day {day}
-                      {day === 1 ? ' (Calendar month)' : ''}
+                      {t('setBudget.day', { day })}
+                      {day === 1 ? ` ${t('setBudget.calendarMonth')}` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                When your budget period starts each month (e.g., payday).
-                {selectedMonthStartDay !== 1 &&
-                  ' For months with fewer days, it will use the last available day.'}
+                {t('setBudget.periodStartHelp')}
+                {selectedMonthStartDay !== 1 && ` ${t('setBudget.periodStartHelpShort')}`}
               </p>
             </div>
 
             {/* Override for this specific month */}
             <div className="space-y-2">
-              <Label htmlFor="budget-start-override">Override for This Period (Optional)</Label>
+              <Label htmlFor="budget-start-override">{t('setBudget.overrideTitle')}</Label>
               <Select
                 value={budgetStartDayOverride?.toString() ?? 'default'}
                 onValueChange={(v) =>
@@ -136,34 +138,34 @@ export function SetBudgetDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Use default" />
+                  <SelectValue placeholder={t('setBudget.useDefault', { day: selectedMonthStartDay })} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">Use default (Day {selectedMonthStartDay})</SelectItem>
+                  <SelectItem value="default">{t('setBudget.useDefault', { day: selectedMonthStartDay })}</SelectItem>
                   {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
                     <SelectItem key={day} value={day.toString()}>
-                      Day {day}
+                      {t('setBudget.day', { day })}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Set a different start day for this specific period only.
+                {t('setBudget.overrideHelp')}
               </p>
             </div>
 
             {monthlyAmount && parseFloat(monthlyAmount) > 0 && (
               <p className="text-sm text-muted-foreground">
-                Daily budget: {formatCurrency(parseFloat(monthlyAmount) / daysInPeriod)}
+                {t('setBudget.dailyBudget', { amount: formatCurrency(parseFloat(monthlyAmount) / daysInPeriod) })}
               </p>
             )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Budget'}
+              {isLoading ? t('common.saving') : t('setBudget.saveBudget')}
             </Button>
           </DialogFooter>
         </form>

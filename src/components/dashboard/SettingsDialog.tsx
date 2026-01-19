@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -62,6 +63,7 @@ export function SettingsDialog({
   onDeleteIncome,
   onEditIncome,
 }: SettingsDialogProps) {
+  const { t } = useTranslation()
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -96,14 +98,14 @@ export function SettingsDialog({
 
     if (pendingDelete.type === 'fixedExpense') {
       return {
-        itemType: 'fixed expense',
+        itemType: t('confirmDelete.fixedExpense'),
         itemName: `${pendingDelete.item.name} - ${formatCurrency(pendingDelete.item.amount)}`,
       }
     }
 
     return {
-      itemType: 'income',
-      itemName: `${pendingDelete.item.description || 'No description'} - ${formatCurrency(pendingDelete.item.amount)}`,
+      itemType: t('confirmDelete.income'),
+      itemName: `${pendingDelete.item.description || t('common.noDescription')} - ${formatCurrency(pendingDelete.item.amount)}`,
     }
   }
 
@@ -114,16 +116,16 @@ export function SettingsDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Budget Settings</DialogTitle>
-            <DialogDescription>Manage your monthly budget and fixed expenses.</DialogDescription>
+            <DialogTitle>{t('settings.title')}</DialogTitle>
+            <DialogDescription>{t('settings.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
             {/* Monthly Budget Section */}
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <Label className="text-base font-medium">Monthly Budget</Label>
+                <Label className="text-base font-medium">{t('settings.monthlyBudget')}</Label>
                 <Button variant="outline" size="sm" onClick={onEditBudget}>
-                  Edit Budget
+                  {t('settings.editBudget')}
                 </Button>
               </div>
               <div className="text-2xl font-bold">{formatCurrency(budget?.monthlyAmount || 0)}</div>
@@ -133,14 +135,14 @@ export function SettingsDialog({
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                 <div>
-                  <Label className="text-base font-medium">Fixed Monthly Expenses</Label>
+                  <Label className="text-base font-medium">{t('settings.fixedExpenses')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Rent, subscriptions, bills - deducted before calculating daily budget
+                    {t('settings.fixedExpensesDescription')}
                   </p>
                 </div>
                 <Button variant="outline" size="sm" className="self-start" onClick={onAddFixedExpense}>
                   <Plus className="h-4 w-4 mr-1" />
-                  Add
+                  {t('common.add')}
                 </Button>
               </div>
 
@@ -149,8 +151,8 @@ export function SettingsDialog({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>{t('common.name')}</TableHead>
+                        <TableHead className="text-right">{t('common.amount')}</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -179,7 +181,7 @@ export function SettingsDialog({
                         </TableRow>
                       ))}
                       <TableRow>
-                        <TableCell className="font-medium">Total</TableCell>
+                        <TableCell className="font-medium">{t('common.total')}</TableCell>
                         <TableCell className="text-right font-bold">
                           {formatCurrency(totalFixedExpenses)}
                         </TableCell>
@@ -190,7 +192,7 @@ export function SettingsDialog({
                 </div>
               ) : (
                 <p className="text-muted-foreground text-center py-4 border rounded-md">
-                  No fixed expenses added
+                  {t('settings.noFixedExpenses')}
                 </p>
               )}
             </div>
@@ -199,9 +201,9 @@ export function SettingsDialog({
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                 <div>
-                  <Label className="text-base font-medium">Added Money This Month</Label>
+                  <Label className="text-base font-medium">{t('settings.addedMoney')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Extra income added to this month's budget
+                    {t('settings.addedMoneyDescription')}
                   </p>
                 </div>
               </div>
@@ -211,8 +213,8 @@ export function SettingsDialog({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>{t('common.description')}</TableHead>
+                        <TableHead className="text-right">{t('common.amount')}</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -223,7 +225,7 @@ export function SettingsDialog({
                             className="cursor-pointer hover:underline"
                             onClick={() => onEditIncome(income)}
                           >
-                            {income.description || 'No description'}
+                            {income.description || t('common.noDescription')}
                           </TableCell>
                           <TableCell className="text-right font-medium text-green-600">
                             +{formatCurrency(income.amount)}
@@ -241,7 +243,7 @@ export function SettingsDialog({
                         </TableRow>
                       ))}
                       <TableRow>
-                        <TableCell className="font-medium">Total</TableCell>
+                        <TableCell className="font-medium">{t('common.total')}</TableCell>
                         <TableCell className="text-right font-bold text-green-600">
                           +{formatCurrency(totalIncomes)}
                         </TableCell>
@@ -252,14 +254,14 @@ export function SettingsDialog({
                 </div>
               ) : (
                 <p className="text-muted-foreground text-center py-4 border rounded-md">
-                  No extra money added this month
+                  {t('settings.noAddedMoney')}
                 </p>
               )}
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Close
+              {t('common.close')}
             </Button>
           </DialogFooter>
         </DialogContent>

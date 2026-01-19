@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { Loader2, LogOut, Monitor, Moon, Sun } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Globe, Loader2, LogOut, Monitor, Moon, Sun } from 'lucide-react'
 
 import {
   AlertDialog,
@@ -14,7 +15,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useTheme } from '@/hooks/useTheme'
+import { useLanguage } from '@/hooks/useLanguage'
 import { destroySession } from '@/lib/session'
 
 // Server function for logout
@@ -31,7 +39,9 @@ type AppHeaderProps = {
 
 export function AppHeader({ showAdminLink }: AppHeaderProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { theme, toggleTheme } = useTheme()
+  const { language, setLanguage, languages, languageNames } = useLanguage()
   const isLoading = useRouterState({ select: (s) => s.status === 'pending' })
 
   const handleLogout = async () => {
@@ -55,14 +65,14 @@ export function AppHeader({ showAdminLink }: AppHeaderProps) {
               to="/dashboard"
               className="text-muted-foreground hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium [&.active]:underline [&.active]:underline-offset-4"
             >
-              Dashboard
+              {t('header.dashboard')}
             </Link>
             {showAdminLink && (
               <Link
                 to="/admin/users"
                 className="text-muted-foreground hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium [&.active]:underline [&.active]:underline-offset-4"
               >
-                Users
+                {t('header.users')}
               </Link>
             )}
           </nav>
@@ -72,6 +82,32 @@ export function AppHeader({ showAdminLink }: AppHeaderProps) {
         </div>
 
         <div className="flex items-center gap-1">
+          {/* Language Selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                title={languageNames[language]}
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {languages.map((lang) => (
+                <DropdownMenuItem
+                  key={lang}
+                  onClick={() => setLanguage(lang)}
+                  className={language === lang ? 'bg-accent' : ''}
+                >
+                  {languageNames[lang]}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -81,23 +117,25 @@ export function AppHeader({ showAdminLink }: AppHeaderProps) {
           >
             <ThemeIcon className="h-4 w-4" />
           </Button>
+
+          {/* Logout */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" size="sm">
                 <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Logout</span>
+                <span className="hidden sm:inline">{t('header.logout')}</span>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
+                <AlertDialogTitle>{t('header.logoutConfirmTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  You will be redirected to the login page.
+                  {t('header.logoutConfirmDescription')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleLogout}>{t('header.logout')}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

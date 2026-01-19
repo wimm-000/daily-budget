@@ -4,6 +4,9 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 
 import appCss from "../styles.css?url";
 
+// Initialize i18n (client-side only)
+import "@/i18n";
+
 // Inline script to prevent flash of wrong theme
 const themeScript = `
 (function() {

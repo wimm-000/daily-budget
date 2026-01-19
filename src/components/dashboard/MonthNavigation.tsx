@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -27,6 +28,8 @@ export function MonthNavigation({
   onNext,
   onGoToCurrent,
 }: MonthNavigationProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="flex items-center justify-between">
       <Button variant="outline" size="icon" onClick={onPrevious}>
@@ -36,7 +39,7 @@ export function MonthNavigation({
         <h2 className="text-lg sm:text-xl font-semibold">{formattedMonthYear}</h2>
         {!isCurrentMonth && (
           <Button variant="ghost" size="sm" onClick={onGoToCurrent}>
-            Today
+            {t('common.today')}
           </Button>
         )}
       </div>
@@ -58,15 +61,17 @@ type PastMonthNoticeProps = {
  * Notice banner shown when viewing a past month
  */
 export function PastMonthNotice({ formattedMonthYear, onGoToCurrent }: PastMonthNoticeProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm text-yellow-700 dark:text-yellow-300">
-      Viewing historical data for {formattedMonthYear}.
+      {t('navigation.viewingHistorical', { month: formattedMonthYear })}
       <Button
         variant="link"
         className="h-auto p-0 ml-1 text-yellow-700 dark:text-yellow-300 underline"
         onClick={onGoToCurrent}
       >
-        Go to current month
+        {t('navigation.goToCurrent')}
       </Button>
     </div>
   )

@@ -198,19 +198,22 @@ export function isFuturePeriod(month: number, year: number, startDay: number = 1
 /**
  * Format a budget period for display
  * Returns "January 2026" if startDay is 1, otherwise "Jan 28 - Feb 27, 2026"
+ * @param period - The budget period to format
+ * @param startDay - The start day of the budget period (1 = calendar month)
+ * @param locale - Locale for formatting (defaults to 'en-US')
  */
-export function formatPeriodDisplay(period: BudgetPeriod, startDay: number = 1): string {
+export function formatPeriodDisplay(period: BudgetPeriod, startDay: number = 1, locale: string = 'en-US'): string {
   if (startDay === 1) {
     const date = new Date(period.year, period.month - 1)
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   }
   
   const startDate = parseDate(period.startDate)
   const endDate = parseDate(period.endDate)
   
-  const startMonth = startDate.toLocaleDateString('en-US', { month: 'short' })
+  const startMonth = startDate.toLocaleDateString(locale, { month: 'short' })
   const startDayNum = startDate.getDate()
-  const endMonth = endDate.toLocaleDateString('en-US', { month: 'short' })
+  const endMonth = endDate.toLocaleDateString(locale, { month: 'short' })
   const endDayNum = endDate.getDate()
   
   // Check if period spans two different years

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Calendar, Minus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -43,12 +44,14 @@ export function ExpensesCard({
   onDeleteExpense,
   onEditExpense,
 }: ExpensesCardProps) {
+  const { t } = useTranslation()
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Calendar className="h-5 w-5" />
-          {isCurrentMonth ? "Today's Expenses" : 'Month Expenses'}
+          {isCurrentMonth ? t('expenses.todaysExpenses') : t('expenses.monthExpenses')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -80,12 +83,13 @@ type TodayExpensesTableProps = {
 }
 
 function TodayExpensesTable({ expenses, formatCurrency, onDelete, onEdit }: TodayExpensesTableProps) {
+  const { t } = useTranslation()
   const [pendingDelete, setPendingDelete] = useState<ExpenseItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   if (!expenses || expenses.length === 0) {
     return (
-      <p className="text-muted-foreground text-center py-4">No expenses recorded today</p>
+      <p className="text-muted-foreground text-center py-4">{t('expenses.noExpensesToday')}</p>
     )
   }
 
@@ -106,9 +110,12 @@ function TodayExpensesTable({ expenses, formatCurrency, onDelete, onEdit }: Toda
   }
 
   const getExpenseDisplayName = (expense: ExpenseItem) => {
-    const config = getCategoryConfig(expense.category)
-    const name = expense.description || config.label
+    const name = expense.description || t(`categories.${expense.category || 'other'}`)
     return `${name} - ${formatCurrency(expense.amount)}`
+  }
+
+  const getCategoryLabel = (expense: ExpenseItem) => {
+    return expense.description || t(`categories.${expense.category || 'other'}`)
   }
 
   return (
@@ -118,8 +125,8 @@ function TodayExpensesTable({ expenses, formatCurrency, onDelete, onEdit }: Toda
           <TableHeader>
             <TableRow>
               <TableHead className="w-[40px]"></TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
+              <TableHead>{t('common.description')}</TableHead>
+              <TableHead className="text-right">{t('common.amount')}</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -136,7 +143,7 @@ function TodayExpensesTable({ expenses, formatCurrency, onDelete, onEdit }: Toda
                     className="cursor-pointer hover:underline"
                     onClick={() => onEdit(expense)}
                   >
-                    {expense.description || config.label}
+                    {getCategoryLabel(expense)}
                   </TableCell>
                   <TableCell className="text-right font-medium">
                     {formatCurrency(expense.amount)}
@@ -146,7 +153,7 @@ function TodayExpensesTable({ expenses, formatCurrency, onDelete, onEdit }: Toda
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteClick(expense)}
-                      aria-label={`Delete ${expense.description || getCategoryConfig(expense.category).label}`}
+                      aria-label={`Delete ${getCategoryLabel(expense)}`}
                     >
                       <Minus className="h-4 w-4 text-destructive" />
                     </Button>
@@ -161,7 +168,7 @@ function TodayExpensesTable({ expenses, formatCurrency, onDelete, onEdit }: Toda
       <ConfirmDeleteDialog
         open={pendingDelete !== null}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-        itemType="expense"
+        itemType={t('confirmDelete.expense')}
         itemName={pendingDelete ? getExpenseDisplayName(pendingDelete) : ''}
         onConfirm={handleConfirmDelete}
         isLoading={isDeleting}
@@ -178,10 +185,16 @@ type MonthExpensesTableProps = {
 }
 
 function MonthExpensesTable({ expenses, formatCurrency, formatDate, onEdit }: MonthExpensesTableProps) {
+  const { t } = useTranslation()
+
   if (!expenses || expenses.length === 0) {
     return (
-      <p className="text-muted-foreground text-center py-4">No expenses recorded this month</p>
+      <p className="text-muted-foreground text-center py-4">{t('expenses.noExpensesThisMonth')}</p>
     )
+  }
+
+  const getCategoryLabel = (expense: ExpenseItem) => {
+    return expense.description || t(`categories.${expense.category || 'other'}`)
   }
 
   return (
@@ -190,9 +203,9 @@ function MonthExpensesTable({ expenses, formatCurrency, formatDate, onEdit }: Mo
         <TableHeader>
           <TableRow>
             <TableHead className="w-[40px]"></TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
+            <TableHead>{t('common.date')}</TableHead>
+            <TableHead>{t('common.description')}</TableHead>
+            <TableHead className="text-right">{t('common.amount')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -211,7 +224,7 @@ function MonthExpensesTable({ expenses, formatCurrency, formatDate, onEdit }: Mo
                   className="cursor-pointer hover:underline"
                   onClick={() => onEdit(expense)}
                 >
-                  {expense.description || config.label}
+                  {getCategoryLabel(expense)}
                 </TableCell>
                 <TableCell className="text-right font-medium">
                   {formatCurrency(expense.amount)}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 
 import type { ExpenseCategory } from '@/db/schema'
@@ -69,8 +70,12 @@ export const Route = createFileRoute('/dashboard')({
 // =============================================================================
 
 function DashboardPage() {
+  const { i18n } = useTranslation()
   const router = useRouter()
   const data = Route.useLoaderData()
+
+  // Get current locale for date formatting
+  const locale = i18n.language === 'es' ? 'es-ES' : 'en-US'
 
   // Dialog states
   const [isBudgetOpen, setIsBudgetOpen] = useState(false)
@@ -122,14 +127,14 @@ function DashboardPage() {
 
   // Formatting helpers
   const formatCurrency = (amount: number) => formatCurrencyHelper(amount, currency)
-  const formatDate = (dateStr: string) => formatDateHelper(dateStr)
+  const formatDate = (dateStr: string) => formatDateHelper(dateStr, locale)
 
   const formatMonthYear = (month: number, year: number) => {
     if (data?.period && effectiveStartDay !== 1) {
-      return formatPeriodDisplay(data.period, effectiveStartDay)
+      return formatPeriodDisplay(data.period, effectiveStartDay, locale)
     }
     const date = new Date(year, month - 1)
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   }
 
   // Navigation helpers

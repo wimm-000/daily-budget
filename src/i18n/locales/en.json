@@ -1,0 +1,189 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "add": "Add",
+    "adding": "Adding...",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "total": "Total",
+    "name": "Name",
+    "amount": "Amount",
+    "description": "Description",
+    "descriptionOptional": "Description (optional)",
+    "date": "Date",
+    "noDescription": "No description",
+    "today": "Today"
+  },
+  "header": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "logout": "Logout",
+    "logoutConfirmTitle": "Are you sure you want to logout?",
+    "logoutConfirmDescription": "You will be redirected to the login page."
+  },
+  "login": {
+    "title": "Daily Budget",
+    "subtitle": "Sign in to manage your daily budget",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "invalidCredentials": "Invalid email or password",
+    "unexpectedError": "An unexpected error occurred"
+  },
+  "dashboard": {
+    "availableToday": "Available Today",
+    "carried": "carried",
+    "debt": "debt",
+    "budget": "Budget",
+    "spent": "Spent",
+    "settings": "Settings"
+  },
+  "navigation": {
+    "goToCurrent": "Go to current month",
+    "viewingHistorical": "Viewing historical data for {{month}}."
+  },
+  "quickActions": {
+    "addExpense": "Add Expense",
+    "addMoney": "Add Money",
+    "budgetCopied": "Your monthly budget was automatically copied from last month.",
+    "editBudget": "Edit budget"
+  },
+  "noBudget": {
+    "welcomeTitle": "Welcome to Daily Budget",
+    "noBudgetTitle": "No Budget Data",
+    "welcomeDescription": "Set your monthly budget to get started",
+    "noBudgetDescription": "No budget was set for {{month}}",
+    "setMonthlyBudget": "Set Monthly Budget"
+  },
+  "expenses": {
+    "todaysExpenses": "Today's Expenses",
+    "monthExpenses": "Month Expenses",
+    "noExpensesToday": "No expenses recorded today",
+    "noExpensesThisMonth": "No expenses recorded this month"
+  },
+  "addExpense": {
+    "addTitle": "Add Expense",
+    "editTitle": "Edit Expense",
+    "addDescription": "Record a new expense for today.",
+    "editDescription": "Update the expense details.",
+    "category": "Category",
+    "selectCategory": "Select category",
+    "placeholder": "Coffee, lunch, groceries..."
+  },
+  "categories": {
+    "food": "Food & Drinks",
+    "transport": "Transport",
+    "entertainment": "Entertainment",
+    "shopping": "Shopping",
+    "bills": "Bills",
+    "health": "Health",
+    "other": "Other"
+  },
+  "addIncome": {
+    "addTitle": "Add Money",
+    "editTitle": "Edit Money",
+    "addDescription": "Add extra income or money to this month's budget.",
+    "editDescription": "Update the income details.",
+    "placeholder": "Bonus, gift, refund..."
+  },
+  "addFixedExpense": {
+    "addTitle": "Add Fixed Expense",
+    "editTitle": "Edit Fixed Expense",
+    "addDescription": "Add a recurring monthly expense like rent, subscriptions, or bills.",
+    "editDescription": "Update the fixed expense details.",
+    "placeholder": "Rent, Netflix, Gym..."
+  },
+  "settings": {
+    "title": "Budget Settings",
+    "description": "Manage your monthly budget and fixed expenses.",
+    "monthlyBudget": "Monthly Budget",
+    "editBudget": "Edit Budget",
+    "fixedExpenses": "Fixed Monthly Expenses",
+    "fixedExpensesDescription": "Rent, subscriptions, bills - deducted before calculating daily budget",
+    "noFixedExpenses": "No fixed expenses added",
+    "addedMoney": "Added Money This Month",
+    "addedMoneyDescription": "Extra income added to this month's budget",
+    "noAddedMoney": "No extra money added this month"
+  },
+  "setBudget": {
+    "title": "Set Monthly Budget",
+    "description": "Enter your total budget for this period. We'll calculate your daily allowance.",
+    "currency": "Currency",
+    "selectCurrency": "Select currency",
+    "usd": "$ USD (US Dollar)",
+    "eur": "€ EUR (Euro)",
+    "monthlyBudget": "Monthly Budget",
+    "periodStartDay": "Budget Period Start Day",
+    "selectStartDay": "Select start day",
+    "day": "Day {{day}}",
+    "calendarMonth": "(Calendar month)",
+    "periodStartHelp": "When your budget period starts each month (e.g., payday).",
+    "periodStartHelpShort": "For months with fewer days, it will use the last available day.",
+    "overrideTitle": "Override for This Period (Optional)",
+    "useDefault": "Use default (Day {{day}})",
+    "overrideHelp": "Set a different start day for this specific period only.",
+    "dailyBudget": "Daily budget: {{amount}}",
+    "saveBudget": "Save Budget"
+  },
+  "dailyLog": {
+    "recentDays": "Recent Days",
+    "dailyHistory": "Daily History",
+    "historyDescription": "Your spending history and carryover",
+    "noHistory": "No history yet",
+    "carryover": "Carryover",
+    "remaining": "Remaining"
+  },
+  "monthlyOverview": {
+    "title": "Monthly Overview",
+    "description": "Budget breakdown for this month",
+    "baseBudget": "Base Budget",
+    "addedMoney": "+ Added Money",
+    "fixedExpenses": "- Fixed Expenses",
+    "availableForDaily": "Available for Daily",
+    "dailyBudget": "Daily Budget ({{days}} days)",
+    "perDay": "{{amount}}/day"
+  },
+  "pastMonth": {
+    "totalSpent": "Total Spent",
+    "expenses": "{{count}} expense(s)",
+    "days": "Days"
+  },
+  "confirmDelete": {
+    "title": "Delete {{itemType}}?",
+    "description": "Are you sure you want to delete \"{{itemName}}\"? This action cannot be undone.",
+    "expense": "expense",
+    "fixedExpense": "fixed expense",
+    "income": "income"
+  },
+  "admin": {
+    "title": "User Management",
+    "description": "Manage user accounts and permissions",
+    "addUser": "Add User",
+    "email": "Email",
+    "role": "Role",
+    "created": "Created",
+    "user": "User",
+    "adminRole": "Admin",
+    "createUser": "Create User",
+    "createDescription": "Add a new user account to the system.",
+    "creating": "Creating...",
+    "editUser": "Edit User",
+    "editDescription": "Update user account details.",
+    "passwordPlaceholder": "Leave blank to keep current",
+    "deleteUser": "Delete User",
+    "deleteDescription": "Are you sure you want to delete {{email}}? This action cannot be undone.",
+    "emailExists": "Email already exists",
+    "failedToCreate": "Failed to create user",
+    "failedToUpdate": "Failed to update user"
+  }
+}

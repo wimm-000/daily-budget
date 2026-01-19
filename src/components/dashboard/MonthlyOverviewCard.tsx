@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Wallet } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { FormatCurrencyFn, BudgetItem } from './types'
@@ -31,42 +32,44 @@ export function MonthlyOverviewCard({
   dailyBudget,
   formatCurrency,
 }: MonthlyOverviewCardProps) {
+  const { t } = useTranslation()
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Wallet className="h-5 w-5" />
-          Monthly Overview
+          {t('monthlyOverview.title')}
         </CardTitle>
-        <CardDescription>Budget breakdown for this month</CardDescription>
+        <CardDescription>{t('monthlyOverview.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Base Budget</span>
+            <span className="text-muted-foreground">{t('monthlyOverview.baseBudget')}</span>
             <span>{formatCurrency(budget.monthlyAmount)}</span>
           </div>
           {totalIncomes > 0 && (
             <div className="flex justify-between text-green-600">
-              <span>+ Added Money</span>
+              <span>{t('monthlyOverview.addedMoney')}</span>
               <span>+{formatCurrency(totalIncomes)}</span>
             </div>
           )}
           {totalFixedExpenses > 0 && (
             <div className="flex justify-between text-destructive">
-              <span>- Fixed Expenses</span>
+              <span>{t('monthlyOverview.fixedExpenses')}</span>
               <span>-{formatCurrency(totalFixedExpenses)}</span>
             </div>
           )}
           <div className="border-t pt-2 flex justify-between font-medium">
-            <span>Available for Daily</span>
+            <span>{t('monthlyOverview.availableForDaily')}</span>
             <span className={availableForDaily < 0 ? 'text-destructive' : ''}>
               {formatCurrency(availableForDaily)}
             </span>
           </div>
           <div className="flex justify-between text-muted-foreground">
-            <span>Daily Budget ({daysInPeriod} days)</span>
-            <span>{formatCurrency(dailyBudget)}/day</span>
+            <span>{t('monthlyOverview.dailyBudget', { days: daysInPeriod })}</span>
+            <span>{t('monthlyOverview.perDay', { amount: formatCurrency(dailyBudget) })}</span>
           </div>
         </div>
       </CardContent>

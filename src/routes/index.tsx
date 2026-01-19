@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { useTranslation } from 'react-i18next'
+import { Globe } from 'lucide-react'
 import { z } from 'zod'
 
 import { db } from '@/db'
@@ -20,6 +22,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useLanguage } from '@/hooks/useLanguage'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -82,6 +91,8 @@ export const Route = createFileRoute('/')({
 
 function LoginPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const { language, setLanguage, languages, languageNames } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -99,14 +110,14 @@ function LoginPage() {
       })
 
       if (!result.success) {
-        setError(result.error || 'Login failed')
+        setError(t('login.invalidCredentials'))
         return
       }
 
       // Redirect to dashboard after login
       navigate({ to: '/dashboard' })
     } catch (err) {
-      setError('An unexpected error occurred')
+      setError(t('login.unexpectedError'))
       console.error('Login error:', err)
     } finally {
       setIsLoading(false)
@@ -115,6 +126,33 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-start justify-center pt-24 sm:pt-[10%] bg-background px-4">
+      {/* Language selector in top right */}
+      <div className="fixed top-4 right-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              title={languageNames[language]}
+            >
+              <Globe className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {languages.map((lang) => (
+              <DropdownMenuItem
+                key={lang}
+                onClick={() => setLanguage(lang)}
+                className={language === lang ? 'bg-accent' : ''}
+              >
+                {languageNames[lang]}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <div className="relative w-full max-w-md">
         {/* Cover image circle */}
         <div className="absolute left-1/2 -translate-x-1/2 -top-16 z-10">
@@ -126,9 +164,9 @@ function LoginPage() {
         </div>
         <Card className="w-full pt-18">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Daily Budget</CardTitle>
+            <CardTitle className="text-2xl font-bold">{t('login.title')}</CardTitle>
             <CardDescription>
-              Sign in to manage your daily budget
+              {t('login.subtitle')}
             </CardDescription>
           </CardHeader>
         <CardContent>
@@ -140,11 +178,11 @@ function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('login.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('login.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -153,11 +191,11 @@ function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('login.password')}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('login.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -175,12 +213,12 @@ function LoginPage() {
                 htmlFor="rememberMe"
                 className="text-sm font-normal cursor-pointer"
               >
-                Remember me
+                {t('login.rememberMe')}
               </Label>
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? t('login.signingIn') : t('login.signIn')}
             </Button>
           </form>
         </CardContent>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { TrendingUp, TrendingDown, Settings } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ export function TodaySummaryCard({
   formatCurrency,
   onSettingsClick,
 }: TodaySummaryCardProps) {
+  const { t } = useTranslation()
   const totalBudget = dailyBudget + (todayLog?.carryover ?? 0)
   const spent = todayLog?.totalSpent ?? 0
   const remaining = todayLog?.remaining ?? dailyBudget
@@ -54,7 +56,7 @@ export function TodaySummaryCard({
             <div className="flex-1 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <p className="text-sm text-muted-foreground">Available Today</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.availableToday')}</p>
                   <div
                     className={`text-2xl sm:text-3xl font-bold ${
                       isOverspent ? 'text-destructive' : 'text-green-600'
@@ -67,12 +69,12 @@ export function TodaySummaryCard({
                       {carryover > 0 ? (
                         <>
                           <TrendingUp className="h-3 w-3 text-green-600" /> +
-                          {formatCurrency(carryover)} carried
+                          {formatCurrency(carryover)} {t('dashboard.carried')}
                         </>
                       ) : (
                         <>
                           <TrendingDown className="h-3 w-3 text-destructive" />{' '}
-                          {formatCurrency(carryover)} debt
+                          {formatCurrency(carryover)} {t('dashboard.debt')}
                         </>
                       )}
                     </p>
@@ -81,11 +83,11 @@ export function TodaySummaryCard({
 
                 <div className="flex gap-4 sm:gap-6 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Budget</p>
+                    <p className="text-muted-foreground">{t('dashboard.budget')}</p>
                     <p className="font-semibold">{formatCurrency(dailyBudget)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Spent</p>
+                    <p className="text-muted-foreground">{t('dashboard.spent')}</p>
                     <p className="font-semibold">{formatCurrency(spent)}</p>
                   </div>
                 </div>
@@ -95,7 +97,7 @@ export function TodaySummaryCard({
           <div className="flex justify-center mt-4">
             <Button variant="outline" size="sm" onClick={onSettingsClick}>
               <Settings className="h-4 w-4" />
-              Settings
+              {t('dashboard.settings')}
             </Button>
           </div>
         </CardContent>

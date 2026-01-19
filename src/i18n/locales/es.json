@@ -1,0 +1,189 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando...",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "add": "Agregar",
+    "adding": "Agregando...",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "loading": "Cargando...",
+    "total": "Total",
+    "name": "Nombre",
+    "amount": "Monto",
+    "description": "Descripcion",
+    "descriptionOptional": "Descripcion (opcional)",
+    "date": "Fecha",
+    "noDescription": "Sin descripcion",
+    "today": "Hoy"
+  },
+  "header": {
+    "dashboard": "Panel",
+    "users": "Usuarios",
+    "logout": "Cerrar sesion",
+    "logoutConfirmTitle": "Seguro que quieres cerrar sesion?",
+    "logoutConfirmDescription": "Seras redirigido a la pagina de inicio de sesion."
+  },
+  "login": {
+    "title": "Presupuesto Diario",
+    "subtitle": "Inicia sesion para gestionar tu presupuesto diario",
+    "email": "Correo electronico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "password": "Contrasena",
+    "passwordPlaceholder": "Ingresa tu contrasena",
+    "rememberMe": "Recordarme",
+    "signIn": "Iniciar sesion",
+    "signingIn": "Iniciando sesion...",
+    "invalidCredentials": "Correo o contrasena invalidos",
+    "unexpectedError": "Ocurrio un error inesperado"
+  },
+  "dashboard": {
+    "availableToday": "Disponible hoy",
+    "carried": "acumulado",
+    "debt": "deuda",
+    "budget": "Presupuesto",
+    "spent": "Gastado",
+    "settings": "Configuracion"
+  },
+  "navigation": {
+    "goToCurrent": "Ir al mes actual",
+    "viewingHistorical": "Viendo datos historicos de {{month}}."
+  },
+  "quickActions": {
+    "addExpense": "Agregar gasto",
+    "addMoney": "Agregar dinero",
+    "budgetCopied": "Tu presupuesto mensual fue copiado automaticamente del mes anterior.",
+    "editBudget": "Editar presupuesto"
+  },
+  "noBudget": {
+    "welcomeTitle": "Bienvenido a Presupuesto Diario",
+    "noBudgetTitle": "Sin datos de presupuesto",
+    "welcomeDescription": "Configura tu presupuesto mensual para comenzar",
+    "noBudgetDescription": "No se configuro presupuesto para {{month}}",
+    "setMonthlyBudget": "Configurar presupuesto mensual"
+  },
+  "expenses": {
+    "todaysExpenses": "Gastos de hoy",
+    "monthExpenses": "Gastos del mes",
+    "noExpensesToday": "No hay gastos registrados hoy",
+    "noExpensesThisMonth": "No hay gastos registrados este mes"
+  },
+  "addExpense": {
+    "addTitle": "Agregar gasto",
+    "editTitle": "Editar gasto",
+    "addDescription": "Registra un nuevo gasto para hoy.",
+    "editDescription": "Actualiza los detalles del gasto.",
+    "category": "Categoria",
+    "selectCategory": "Seleccionar categoria",
+    "placeholder": "Cafe, almuerzo, compras..."
+  },
+  "categories": {
+    "food": "Comida y bebidas",
+    "transport": "Transporte",
+    "entertainment": "Entretenimiento",
+    "shopping": "Compras",
+    "bills": "Facturas",
+    "health": "Salud",
+    "other": "Otros"
+  },
+  "addIncome": {
+    "addTitle": "Agregar dinero",
+    "editTitle": "Editar dinero",
+    "addDescription": "Agrega ingresos extra al presupuesto de este mes.",
+    "editDescription": "Actualiza los detalles del ingreso.",
+    "placeholder": "Bono, regalo, reembolso..."
+  },
+  "addFixedExpense": {
+    "addTitle": "Agregar gasto fijo",
+    "editTitle": "Editar gasto fijo",
+    "addDescription": "Agrega un gasto mensual recurrente como alquiler, suscripciones o facturas.",
+    "editDescription": "Actualiza los detalles del gasto fijo.",
+    "placeholder": "Alquiler, Netflix, Gimnasio..."
+  },
+  "settings": {
+    "title": "Configuracion de presupuesto",
+    "description": "Gestiona tu presupuesto mensual y gastos fijos.",
+    "monthlyBudget": "Presupuesto mensual",
+    "editBudget": "Editar presupuesto",
+    "fixedExpenses": "Gastos fijos mensuales",
+    "fixedExpensesDescription": "Alquiler, suscripciones, facturas - se deducen antes de calcular el presupuesto diario",
+    "noFixedExpenses": "No hay gastos fijos agregados",
+    "addedMoney": "Dinero agregado este mes",
+    "addedMoneyDescription": "Ingresos extra agregados al presupuesto de este mes",
+    "noAddedMoney": "No se ha agregado dinero extra este mes"
+  },
+  "setBudget": {
+    "title": "Configurar presupuesto mensual",
+    "description": "Ingresa tu presupuesto total para este periodo. Calcularemos tu asignacion diaria.",
+    "currency": "Moneda",
+    "selectCurrency": "Seleccionar moneda",
+    "usd": "$ USD (Dolar estadounidense)",
+    "eur": "€ EUR (Euro)",
+    "monthlyBudget": "Presupuesto mensual",
+    "periodStartDay": "Dia de inicio del periodo",
+    "selectStartDay": "Seleccionar dia de inicio",
+    "day": "Dia {{day}}",
+    "calendarMonth": "(Mes calendario)",
+    "periodStartHelp": "Cuando comienza tu periodo de presupuesto cada mes (ej. dia de pago).",
+    "periodStartHelpShort": "Para meses con menos dias, se usara el ultimo dia disponible.",
+    "overrideTitle": "Excepcion para este periodo (opcional)",
+    "useDefault": "Usar predeterminado (Dia {{day}})",
+    "overrideHelp": "Establece un dia de inicio diferente solo para este periodo especifico.",
+    "dailyBudget": "Presupuesto diario: {{amount}}",
+    "saveBudget": "Guardar presupuesto"
+  },
+  "dailyLog": {
+    "recentDays": "Dias recientes",
+    "dailyHistory": "Historial diario",
+    "historyDescription": "Tu historial de gastos y acumulado",
+    "noHistory": "Sin historial aun",
+    "carryover": "Acumulado",
+    "remaining": "Restante"
+  },
+  "monthlyOverview": {
+    "title": "Resumen mensual",
+    "description": "Desglose del presupuesto de este mes",
+    "baseBudget": "Presupuesto base",
+    "addedMoney": "+ Dinero agregado",
+    "fixedExpenses": "- Gastos fijos",
+    "availableForDaily": "Disponible para diario",
+    "dailyBudget": "Presupuesto diario ({{days}} dias)",
+    "perDay": "{{amount}}/dia"
+  },
+  "pastMonth": {
+    "totalSpent": "Total gastado",
+    "expenses": "{{count}} gasto(s)",
+    "days": "Dias"
+  },
+  "confirmDelete": {
+    "title": "Eliminar {{itemType}}?",
+    "description": "Seguro que quieres eliminar \"{{itemName}}\"? Esta accion no se puede deshacer.",
+    "expense": "gasto",
+    "fixedExpense": "gasto fijo",
+    "income": "ingreso"
+  },
+  "admin": {
+    "title": "Gestion de usuarios",
+    "description": "Gestiona las cuentas de usuario y permisos",
+    "addUser": "Agregar usuario",
+    "email": "Correo electronico",
+    "role": "Rol",
+    "created": "Creado",
+    "user": "Usuario",
+    "adminRole": "Admin",
+    "createUser": "Crear usuario",
+    "createDescription": "Agrega una nueva cuenta de usuario al sistema.",
+    "creating": "Creando...",
+    "editUser": "Editar usuario",
+    "editDescription": "Actualiza los detalles de la cuenta de usuario.",
+    "passwordPlaceholder": "Dejar en blanco para mantener actual",
+    "deleteUser": "Eliminar usuario",
+    "deleteDescription": "Seguro que quieres eliminar {{email}}? Esta accion no se puede deshacer.",
+    "emailExists": "El correo electronico ya existe",
+    "failedToCreate": "Error al crear usuario",
+    "failedToUpdate": "Error al actualizar usuario"
+  }
+}

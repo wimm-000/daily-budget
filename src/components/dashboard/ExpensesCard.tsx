@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Calendar, Minus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { getCategoryConfig } from './category-config'
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog'
 import type { FormatCurrencyFn, FormatDateFn, ExpenseItem } from './types'
 
 type ExpensesCardProps = {
@@ -23,8 +25,8 @@ type ExpensesCardProps = {
   formatCurrency: FormatCurrencyFn
   /** Date formatting function */
   formatDate: FormatDateFn
-  /** Callback when deleting an expense */
-  onDeleteExpense: (id: number) => void
+  /** Callback when deleting an expense (async) */
+  onDeleteExpense: (id: number) => Promise<void>
 }
 
 /**
@@ -68,51 +70,92 @@ export function ExpensesCard({
 type TodayExpensesTableProps = {
   expenses: ExpenseItem[] | undefined
   formatCurrency: FormatCurrencyFn
-  onDelete: (id: number) => void
+  onDelete: (id: number) => Promise<void>
 }
 
 function TodayExpensesTable({ expenses, formatCurrency, onDelete }: TodayExpensesTableProps) {
+  const [pendingDelete, setPendingDelete] = useState<ExpenseItem | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   if (!expenses || expenses.length === 0) {
     return (
       <p className="text-muted-foreground text-center py-4">No expenses recorded today</p>
     )
   }
 
+  const handleDeleteClick = (expense: ExpenseItem) => {
+    setPendingDelete(expense)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (pendingDelete) {
+      setIsDeleting(true)
+      try {
+        await onDelete(pendingDelete.id)
+        setPendingDelete(null)
+      } finally {
+        setIsDeleting(false)
+      }
+    }
+  }
+
+  const getExpenseDisplayName = (expense: ExpenseItem) => {
+    const config = getCategoryConfig(expense.category)
+    const name = expense.description || config.label
+    return `${name} - ${formatCurrency(expense.amount)}`
+  }
+
   return (
-    <div className="overflow-x-auto -mx-4 sm:mx-0">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[40px]"></TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {expenses.map((expense) => {
-            const config = getCategoryConfig(expense.category)
-            const Icon = config.icon
-            return (
-              <TableRow key={expense.id}>
-                <TableCell>
-                  <Icon className={`h-4 w-4 ${config.color}`} />
-                </TableCell>
-                <TableCell>{expense.description || config.label}</TableCell>
-                <TableCell className="text-right font-medium">
-                  {formatCurrency(expense.amount)}
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete(expense.id)}>
-                    <Minus className="h-4 w-4 text-destructive" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
-    </div>
+    <>
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[40px]"></TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {expenses.map((expense) => {
+              const config = getCategoryConfig(expense.category)
+              const Icon = config.icon
+              return (
+                <TableRow key={expense.id}>
+                  <TableCell>
+                    <Icon className={`h-4 w-4 ${config.color}`} />
+                  </TableCell>
+                  <TableCell>{expense.description || config.label}</TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatCurrency(expense.amount)}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(expense)}
+                      aria-label={`Delete ${expense.description || getCategoryConfig(expense.category).label}`}
+                    >
+                      <Minus className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      <ConfirmDeleteDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        itemType="expense"
+        itemName={pendingDelete ? getExpenseDisplayName(pendingDelete) : ''}
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
+      />
+    </>
   )
 }
 

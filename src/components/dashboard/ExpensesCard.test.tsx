@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ExpensesCard } from './ExpensesCard'
 import type { ExpenseItem } from './types'
@@ -23,6 +23,19 @@ function createMockExpense(overrides: Partial<ExpenseItem> = {}): ExpenseItem {
   }
 }
 
+// Helper to create async mock that resolves immediately
+const createAsyncMock = () => vi.fn().mockResolvedValue(undefined)
+
+// Helper to create async mock that can be controlled
+const createControllableAsyncMock = () => {
+  let resolvePromise: () => void
+  const promise = new Promise<void>((resolve) => {
+    resolvePromise = resolve
+  })
+  const mock = vi.fn().mockReturnValue(promise)
+  return { mock, resolve: () => resolvePromise() }
+}
+
 describe('ExpensesCard', () => {
   const defaultProps = {
     isCurrentMonth: true,
@@ -30,7 +43,7 @@ describe('ExpensesCard', () => {
     monthExpenses: [] as ExpenseItem[],
     formatCurrency: mockFormatCurrency,
     formatDate: mockFormatDate,
-    onDeleteExpense: vi.fn(),
+    onDeleteExpense: createAsyncMock(),
   }
 
   describe('rendering', () => {
@@ -126,9 +139,9 @@ describe('ExpensesCard', () => {
 
     it('calls onDeleteExpense with correct id when delete button clicked', async () => {
       const user = userEvent.setup()
-      const onDeleteExpense = vi.fn()
+      const onDeleteExpense = createAsyncMock()
       const expenses = [
-        createMockExpense({ id: 42, description: 'Test expense' }),
+        createMockExpense({ id: 42, description: 'Test expense', amount: 10.00 }),
       ]
       render(
         <ExpensesCard
@@ -139,8 +152,17 @@ describe('ExpensesCard', () => {
         />
       )
 
-      const deleteButton = screen.getByRole('button')
+      // Click delete button to open confirmation dialog
+      const deleteButton = screen.getByRole('button', { name: /delete test expense/i })
       await user.click(deleteButton)
+
+      // Verify confirmation dialog appears
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+      expect(screen.getByText('Delete expense?')).toBeInTheDocument()
+      expect(screen.getByText(/Test expense - €10.00/)).toBeInTheDocument()
+
+      // Confirm deletion
+      await user.click(screen.getByRole('button', { name: 'Delete' }))
 
       expect(onDeleteExpense).toHaveBeenCalledWith(42)
     })
@@ -172,6 +194,111 @@ describe('ExpensesCard', () => {
 
       expect(screen.getByText('Description')).toBeInTheDocument()
       expect(screen.getByText('Amount')).toBeInTheDocument()
+    })
+  })
+
+  describe('delete confirmation dialog', () => {
+    it('does not call onDeleteExpense when cancel is clicked', async () => {
+      const user = userEvent.setup()
+      const onDeleteExpense = createAsyncMock()
+      const expenses = [
+        createMockExpense({ id: 1, description: 'Coffee', amount: 5.00 }),
+      ]
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={true}
+          todayExpenses={expenses}
+          onDeleteExpense={onDeleteExpense}
+        />
+      )
+
+      // Open confirmation dialog
+      await user.click(screen.getByRole('button', { name: /delete coffee/i }))
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+
+      // Cancel deletion
+      await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+      expect(onDeleteExpense).not.toHaveBeenCalled()
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    })
+
+    it('shows category label in confirmation when description is null', async () => {
+      const user = userEvent.setup()
+      const expenses = [
+        createMockExpense({ id: 1, description: null, category: 'transport', amount: 15.00 }),
+      ]
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={true}
+          todayExpenses={expenses}
+        />
+      )
+
+      await user.click(screen.getByRole('button', { name: /delete transport/i }))
+
+      expect(screen.getByText(/Transport - €15.00/)).toBeInTheDocument()
+    })
+
+    it('closes dialog after confirming delete', async () => {
+      const user = userEvent.setup()
+      const expenses = [
+        createMockExpense({ id: 1, description: 'Lunch', amount: 12.00 }),
+      ]
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={true}
+          todayExpenses={expenses}
+        />
+      )
+
+      await user.click(screen.getByRole('button', { name: /delete lunch/i }))
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+      await waitFor(() => {
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+      })
+    })
+
+    it('shows loading spinner while deleting', async () => {
+      const user = userEvent.setup()
+      const { mock: onDeleteExpense, resolve } = createControllableAsyncMock()
+      const expenses = [
+        createMockExpense({ id: 1, description: 'Coffee', amount: 5.00 }),
+      ]
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={true}
+          todayExpenses={expenses}
+          onDeleteExpense={onDeleteExpense}
+        />
+      )
+
+      // Open confirmation dialog
+      await user.click(screen.getByRole('button', { name: /delete coffee/i }))
+      
+      // Click delete - this will start the async operation
+      await user.click(screen.getByRole('button', { name: 'Delete' }))
+      
+      // Should show spinner (Delete text should be gone, spinner visible)
+      expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+      
+      // Buttons should be disabled
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
+      
+      // Resolve the promise
+      resolve()
+      
+      // Dialog should close after resolution
+      await waitFor(() => {
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+      })
     })
   })
 

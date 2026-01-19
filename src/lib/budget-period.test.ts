@@ -6,6 +6,9 @@ import {
   formatPeriodDisplay,
   areDatesInSamePeriod,
   getYesterday,
+  isDateInPeriod,
+  getPreviousPeriod,
+  getNextPeriod,
 } from './budget-period'
 
 describe('getEffectiveStartDay', () => {
@@ -25,6 +28,24 @@ describe('getEffectiveStartDay', () => {
     // February 2024 has 29 days (leap year)
     expect(getEffectiveStartDay(30, 2, 2024)).toBe(29)
     expect(getEffectiveStartDay(29, 2, 2024)).toBe(29)
+  })
+
+  it('handles April, June, September, November (30 days)', () => {
+    expect(getEffectiveStartDay(31, 4, 2026)).toBe(30)
+    expect(getEffectiveStartDay(31, 6, 2026)).toBe(30)
+    expect(getEffectiveStartDay(31, 9, 2026)).toBe(30)
+    expect(getEffectiveStartDay(31, 11, 2026)).toBe(30)
+    expect(getEffectiveStartDay(30, 4, 2026)).toBe(30)
+  })
+
+  it('handles 31-day months without clamping', () => {
+    expect(getEffectiveStartDay(31, 1, 2026)).toBe(31)
+    expect(getEffectiveStartDay(31, 3, 2026)).toBe(31)
+    expect(getEffectiveStartDay(31, 5, 2026)).toBe(31)
+    expect(getEffectiveStartDay(31, 7, 2026)).toBe(31)
+    expect(getEffectiveStartDay(31, 8, 2026)).toBe(31)
+    expect(getEffectiveStartDay(31, 10, 2026)).toBe(31)
+    expect(getEffectiveStartDay(31, 12, 2026)).toBe(31)
   })
 })
 
@@ -167,5 +188,151 @@ describe('formatPeriodDisplay', () => {
   it('handles year boundary in format', () => {
     const period = getBudgetPeriod(12, 2025, 28)
     expect(formatPeriodDisplay(period, 28)).toBe('Dec 28, 2025 - Jan 27, 2026')
+  })
+
+  it('formats all months correctly for startDay = 1', () => {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+    months.forEach((monthName, index) => {
+      const period = getBudgetPeriod(index + 1, 2026, 1)
+      expect(formatPeriodDisplay(period, 1)).toBe(`${monthName} 2026`)
+    })
+  })
+})
+
+describe('isDateInPeriod', () => {
+  it('returns true for dates within the period', () => {
+    const period = getBudgetPeriod(1, 2026, 1) // Jan 1 - Jan 31
+    expect(isDateInPeriod('2026-01-01', period)).toBe(true)
+    expect(isDateInPeriod('2026-01-15', period)).toBe(true)
+    expect(isDateInPeriod('2026-01-31', period)).toBe(true)
+  })
+
+  it('returns false for dates outside the period', () => {
+    const period = getBudgetPeriod(1, 2026, 1) // Jan 1 - Jan 31
+    expect(isDateInPeriod('2025-12-31', period)).toBe(false)
+    expect(isDateInPeriod('2026-02-01', period)).toBe(false)
+    expect(isDateInPeriod('2026-06-15', period)).toBe(false)
+  })
+
+  it('works with custom startDay periods', () => {
+    const period = getBudgetPeriod(1, 2026, 28) // Jan 28 - Feb 27
+    expect(isDateInPeriod('2026-01-27', period)).toBe(false) // Before period
+    expect(isDateInPeriod('2026-01-28', period)).toBe(true)  // Start of period
+    expect(isDateInPeriod('2026-02-15', period)).toBe(true)  // Middle of period
+    expect(isDateInPeriod('2026-02-27', period)).toBe(true)  // End of period
+    expect(isDateInPeriod('2026-02-28', period)).toBe(false) // After period
+  })
+})
+
+describe('getPreviousPeriod', () => {
+  it('returns previous month for mid-year months', () => {
+    const prev = getPreviousPeriod(6, 2026, 1)
+    expect(prev.month).toBe(5)
+    expect(prev.year).toBe(2026)
+    expect(prev.startDate).toBe('2026-05-01')
+  })
+
+  it('handles year boundary (January -> December)', () => {
+    const prev = getPreviousPeriod(1, 2026, 1)
+    expect(prev.month).toBe(12)
+    expect(prev.year).toBe(2025)
+    expect(prev.startDate).toBe('2025-12-01')
+    expect(prev.endDate).toBe('2025-12-31')
+  })
+
+  it('works with custom startDay', () => {
+    const prev = getPreviousPeriod(3, 2026, 28)
+    expect(prev.month).toBe(2)
+    expect(prev.year).toBe(2026)
+    expect(prev.startDate).toBe('2026-02-28')
+    expect(prev.endDate).toBe('2026-03-27')
+  })
+
+  it('handles year boundary with custom startDay', () => {
+    const prev = getPreviousPeriod(1, 2026, 28)
+    expect(prev.month).toBe(12)
+    expect(prev.year).toBe(2025)
+    expect(prev.startDate).toBe('2025-12-28')
+    expect(prev.endDate).toBe('2026-01-27')
+  })
+})
+
+describe('getNextPeriod', () => {
+  it('returns next month for mid-year months', () => {
+    const next = getNextPeriod(6, 2026, 1)
+    expect(next.month).toBe(7)
+    expect(next.year).toBe(2026)
+    expect(next.startDate).toBe('2026-07-01')
+  })
+
+  it('handles year boundary (December -> January)', () => {
+    const next = getNextPeriod(12, 2025, 1)
+    expect(next.month).toBe(1)
+    expect(next.year).toBe(2026)
+    expect(next.startDate).toBe('2026-01-01')
+    expect(next.endDate).toBe('2026-01-31')
+  })
+
+  it('works with custom startDay', () => {
+    const next = getNextPeriod(1, 2026, 28)
+    expect(next.month).toBe(2)
+    expect(next.year).toBe(2026)
+    expect(next.startDate).toBe('2026-02-28')
+  })
+
+  it('handles year boundary with custom startDay', () => {
+    const next = getNextPeriod(12, 2025, 28)
+    expect(next.month).toBe(1)
+    expect(next.year).toBe(2026)
+    expect(next.startDate).toBe('2026-01-28')
+    expect(next.endDate).toBe('2026-02-27')
+  })
+})
+
+describe('edge cases', () => {
+  it('handles leap year transitions', () => {
+    // Period spanning Feb 29 in a leap year
+    const period = getBudgetPeriod(2, 2024, 15)
+    expect(period.startDate).toBe('2024-02-15')
+    expect(period.endDate).toBe('2024-03-14')
+    expect(period.daysInPeriod).toBe(29) // Feb 15-29 (15 days) + Mar 1-14 (14 days) = 29
+  })
+
+  it('handles non-leap year February', () => {
+    const period = getBudgetPeriod(2, 2026, 15)
+    expect(period.startDate).toBe('2026-02-15')
+    expect(period.endDate).toBe('2026-03-14')
+    expect(period.daysInPeriod).toBe(28) // Feb 15-28 (14 days) + Mar 1-14 (14 days) = 28
+  })
+
+  it('handles startDay = 1 consistently across all months', () => {
+    const daysInMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    for (let month = 1; month <= 12; month++) {
+      const period = getBudgetPeriod(month, 2026, 1)
+      expect(period.daysInPeriod).toBe(daysInMonths[month - 1])
+    }
+  })
+
+  it('getYesterday handles month boundaries', () => {
+    expect(getYesterday('2026-02-01')).toBe('2026-01-31')
+    expect(getYesterday('2026-03-01')).toBe('2026-02-28')
+    expect(getYesterday('2024-03-01')).toBe('2024-02-29') // Leap year
+    expect(getYesterday('2026-05-01')).toBe('2026-04-30')
+  })
+
+  it('getYesterday handles year boundary', () => {
+    expect(getYesterday('2026-01-01')).toBe('2025-12-31')
+  })
+
+  it('areDatesInSamePeriod handles edge cases at period boundaries', () => {
+    // Last day of period and first day of next period
+    expect(areDatesInSamePeriod('2026-01-31', '2026-02-01', 1)).toBe(false)
+    
+    // Same day should always be in same period
+    expect(areDatesInSamePeriod('2026-01-15', '2026-01-15', 1)).toBe(true)
+    expect(areDatesInSamePeriod('2026-01-28', '2026-01-28', 28)).toBe(true)
   })
 })

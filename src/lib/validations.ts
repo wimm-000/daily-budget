@@ -84,7 +84,7 @@ export const updateMonthStartDaySchema = z.object({
 export type UpdateMonthStartDayInput = z.infer<typeof updateMonthStartDaySchema>
 
 export const updateCurrencySchema = z.object({
-  currency: currencySchema,
+  currency: z.enum(['USD', 'EUR']),
 })
 
 export type UpdateCurrencyInput = z.infer<typeof updateCurrencySchema>
@@ -93,10 +93,24 @@ export type UpdateCurrencyInput = z.infer<typeof updateCurrencySchema>
 // Expense schemas
 // =============================================================================
 
+/** Expense categories matching the database schema */
+export const expenseCategorySchema = z.enum([
+  'food',
+  'transport',
+  'entertainment',
+  'shopping',
+  'bills',
+  'health',
+  'other',
+])
+
+export type ExpenseCategory = z.infer<typeof expenseCategorySchema>
+
 export const addExpenseSchema = z.object({
   amount: positiveAmountSchema,
   description: z.string().optional(),
   date: z.string().optional(), // ISO date string
+  category: expenseCategorySchema.optional().default('other'),
 })
 
 export type AddExpenseInput = z.infer<typeof addExpenseSchema>
@@ -130,3 +144,9 @@ export const dashboardSearchParamsSchema = z.object({
 })
 
 export type DashboardSearchParams = z.infer<typeof dashboardSearchParamsSchema>
+
+/** Search params schema with coercion for URL query strings */
+export const dashboardSearchParamsCoercedSchema = z.object({
+  month: z.coerce.number().min(1).max(12).optional(),
+  year: z.coerce.number().optional(),
+})

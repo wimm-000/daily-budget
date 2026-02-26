@@ -10,6 +10,8 @@ type TodaySummaryCardProps = {
   todayLog: DailyLogItem | null | undefined
   /** Calculated daily budget */
   dailyBudget: number
+  /** Remaining monthly budget (availableForDaily - monthSpent) */
+  monthlyRemaining?: number
   /** Currency formatting function */
   formatCurrency: FormatCurrencyFn
   /** Callback when settings button is clicked */
@@ -22,6 +24,7 @@ type TodaySummaryCardProps = {
 export function TodaySummaryCard({
   todayLog,
   dailyBudget,
+  monthlyRemaining,
   formatCurrency,
   onSettingsClick,
 }: TodaySummaryCardProps) {
@@ -31,6 +34,8 @@ export function TodaySummaryCard({
   const remaining = todayLog?.remaining ?? dailyBudget
   const isOverspent = remaining < 0
   const carryover = todayLog?.carryover ?? 0
+  const monthlyBudgetRemaining = monthlyRemaining ?? remaining
+  const isMonthlyOverspent = monthlyBudgetRemaining < 0
 
   return (
     <div className="relative mt-16">
@@ -89,6 +94,14 @@ export function TodaySummaryCard({
                   <div>
                     <p className="text-muted-foreground">{t('dashboard.spent')}</p>
                     <p className="font-semibold">{formatCurrency(spent)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">{t('dashboard.remaining')}</p>
+                    <p
+                      className={`font-semibold ${isMonthlyOverspent ? 'text-destructive' : 'text-green-600'}`}
+                    >
+                      {formatCurrency(monthlyBudgetRemaining)}
+                    </p>
                   </div>
                 </div>
               </div>

@@ -46,6 +46,7 @@
     "debt": "debt",
     "budget": "Budget",
     "spent": "Spent",
+    "remaining": "Remaining",
     "settings": "Settings"
   },
   "navigation": {

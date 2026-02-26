@@ -120,6 +120,8 @@ function DashboardPage() {
   const totalFixedExpenses = data?.totalFixedExpenses || 0
   const totalIncomes = data?.totalIncomes || 0
   const availableForDaily = (budget?.monthlyAmount || 0) + totalIncomes - totalFixedExpenses
+  const monthSpent = data?.monthExpenses?.reduce((sum, expense) => sum + expense.amount, 0) ?? 0
+  const monthlyRemaining = availableForDaily - monthSpent
   const dailyBudget = budget ? Math.max(0, availableForDaily / daysInPeriod) : 0
   const isCurrentMonth = data?.isCurrentMonth ?? true
   const viewMonth = data?.month || getCurrentMonth()
@@ -394,6 +396,7 @@ function DashboardPage() {
                 <TodaySummaryCard
                   todayLog={todayLog}
                   dailyBudget={dailyBudget}
+                  monthlyRemaining={monthlyRemaining}
                   formatCurrency={formatCurrency}
                   onSettingsClick={() => setIsSettingsOpen(true)}
                 />

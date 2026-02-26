@@ -36,6 +36,7 @@ describe('TodaySummaryCard', () => {
       expect(screen.getByText('Available Today')).toBeInTheDocument()
       expect(screen.getByText('Budget')).toBeInTheDocument()
       expect(screen.getByText('Spent')).toBeInTheDocument()
+      expect(screen.getByText('Remaining')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument()
     })
 
@@ -82,7 +83,7 @@ describe('TodaySummaryCard', () => {
         />
       )
 
-      expect(screen.getByText('€25.50')).toBeInTheDocument()
+      expect(screen.getAllByText('€25.50')).toHaveLength(2)
     })
 
     it('displays daily budget correctly', () => {
@@ -126,8 +127,11 @@ describe('TodaySummaryCard', () => {
         />
       )
 
-      const remainingElement = screen.getByText('€25.50')
-      expect(remainingElement).toHaveClass('text-green-600')
+      const remainingElements = screen.getAllByText('€25.50')
+      expect(remainingElements).toHaveLength(2)
+      remainingElements.forEach((element) => {
+        expect(element).toHaveClass('text-green-600')
+      })
     })
   })
 
@@ -143,7 +147,7 @@ describe('TodaySummaryCard', () => {
         />
       )
 
-      expect(screen.getByText('€-10.50')).toBeInTheDocument()
+      expect(screen.getAllByText('€-10.50')).toHaveLength(2)
     })
 
     it('applies destructive color when overspent', () => {
@@ -157,8 +161,11 @@ describe('TodaySummaryCard', () => {
         />
       )
 
-      const remainingElement = screen.getByText('€-10.50')
-      expect(remainingElement).toHaveClass('text-destructive')
+      const remainingElements = screen.getAllByText('€-10.50')
+      expect(remainingElements).toHaveLength(2)
+      remainingElements.forEach((element) => {
+        expect(element).toHaveClass('text-destructive')
+      })
     })
   })
 
@@ -223,6 +230,21 @@ describe('TodaySummaryCard', () => {
   })
 
   describe('null/undefined todayLog handling', () => {
+    it('uses monthlyRemaining for Remaining metric when provided', () => {
+      const onSettingsClick = vi.fn()
+      render(
+        <TodaySummaryCard
+          todayLog={createMockDailyLog({ remaining: 25.00 })}
+          dailyBudget={33.33}
+          monthlyRemaining={120.00}
+          formatCurrency={mockFormatCurrency}
+          onSettingsClick={onSettingsClick}
+        />
+      )
+
+      expect(screen.getByText('€120.00')).toBeInTheDocument()
+    })
+
     it('displays dailyBudget as remaining when todayLog is null', () => {
       const onSettingsClick = vi.fn()
       render(
@@ -234,9 +256,9 @@ describe('TodaySummaryCard', () => {
         />
       )
 
-      // dailyBudget appears both as "Available Today" (remaining) and "Budget"
+      // dailyBudget appears in "Available Today", "Budget", and "Remaining"
       const budgetElements = screen.getAllByText('€50.00')
-      expect(budgetElements.length).toBe(2) // Once for remaining, once for budget
+      expect(budgetElements.length).toBe(3)
     })
 
     it('displays zero spent when todayLog is null', () => {
@@ -264,9 +286,9 @@ describe('TodaySummaryCard', () => {
         />
       )
 
-      // dailyBudget appears both as "Available Today" (remaining) and "Budget"
+      // dailyBudget appears in "Available Today", "Budget", and "Remaining"
       const budgetElements = screen.getAllByText('€50.00')
-      expect(budgetElements.length).toBe(2)
+      expect(budgetElements.length).toBe(3)
     })
   })
 

@@ -50,12 +50,12 @@ describe('ExpensesCard', () => {
   describe('rendering', () => {
     it('renders the card with title', () => {
       render(<ExpensesCard {...defaultProps} />)
-      expect(screen.getByText("Today's Expenses")).toBeInTheDocument()
+      expect(screen.getByText('Month Expenses')).toBeInTheDocument()
     })
 
-    it('shows "Today\'s Expenses" title for current month', () => {
+    it('shows "Month Expenses" title for current month', () => {
       render(<ExpensesCard {...defaultProps} isCurrentMonth={true} />)
-      expect(screen.getByText("Today's Expenses")).toBeInTheDocument()
+      expect(screen.getByText('Month Expenses')).toBeInTheDocument()
     })
 
     it('shows "Month Expenses" title for past month', () => {
@@ -64,7 +64,7 @@ describe('ExpensesCard', () => {
     })
   })
 
-  describe('current month - today expenses', () => {
+  describe('current month - month expenses', () => {
     it('shows empty state when no expenses', () => {
       render(
         <ExpensesCard
@@ -73,7 +73,7 @@ describe('ExpensesCard', () => {
           todayExpenses={[]}
         />
       )
-      expect(screen.getByText('No expenses recorded today')).toBeInTheDocument()
+      expect(screen.getByText('No expenses recorded this month')).toBeInTheDocument()
     })
 
     it('shows empty state when todayExpenses is undefined', () => {
@@ -84,7 +84,7 @@ describe('ExpensesCard', () => {
           todayExpenses={undefined}
         />
       )
-      expect(screen.getByText('No expenses recorded today')).toBeInTheDocument()
+      expect(screen.getByText('No expenses recorded this month')).toBeInTheDocument()
     })
 
     it('renders expense list with descriptions', () => {
@@ -183,7 +183,7 @@ describe('ExpensesCard', () => {
       expect(screen.getByText('Food & Drinks')).toBeInTheDocument()
     })
 
-    it('renders table headers for today expenses', () => {
+    it('renders table headers for month expenses in current month', () => {
       const expenses = [createMockExpense()]
       render(
         <ExpensesCard
@@ -193,8 +193,27 @@ describe('ExpensesCard', () => {
         />
       )
 
+      expect(screen.getByText('Date')).toBeInTheDocument()
       expect(screen.getByText('Description')).toBeInTheDocument()
       expect(screen.getByText('Amount')).toBeInTheDocument()
+    })
+
+    it('shows day filter controls', () => {
+      const expenses = [
+        createMockExpense({ id: 1, description: 'Coffee', date: '2026-01-15' }),
+        createMockExpense({ id: 2, description: 'Lunch', date: '2026-01-20' }),
+      ]
+      render(
+        <ExpensesCard
+          {...defaultProps}
+          isCurrentMonth={true}
+          monthExpenses={expenses}
+        />
+      )
+
+      expect(screen.getByText('Filter by day')).toBeInTheDocument()
+      expect(screen.getByRole('combobox')).toBeInTheDocument()
+      expect(screen.getByText('All days')).toBeInTheDocument()
     })
   })
 

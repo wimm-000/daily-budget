@@ -70,7 +70,10 @@
     "todaysExpenses": "Today's Expenses",
     "monthExpenses": "Month Expenses",
     "noExpensesToday": "No expenses recorded today",
-    "noExpensesThisMonth": "No expenses recorded this month"
+    "noExpensesThisMonth": "No expenses recorded this month",
+    "filterByDay": "Filter by day",
+    "allDays": "All days",
+    "noExpensesForDay": "No expenses for selected day"
   },
   "addExpense": {
     "addTitle": "Add Expense",

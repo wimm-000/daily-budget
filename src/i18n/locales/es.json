@@ -70,7 +70,10 @@
     "todaysExpenses": "Gastos de hoy",
     "monthExpenses": "Gastos del mes",
     "noExpensesToday": "No hay gastos registrados hoy",
-    "noExpensesThisMonth": "No hay gastos registrados este mes"
+    "noExpensesThisMonth": "No hay gastos registrados este mes",
+    "filterByDay": "Filtrar por dia",
+    "allDays": "Todos los dias",
+    "noExpensesForDay": "No hay gastos para el dia seleccionado"
   },
   "addExpense": {
     "addTitle": "Agregar gasto",

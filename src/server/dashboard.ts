@@ -260,14 +260,14 @@ export const getDashboardData = createServerFn({
       return log.date >= startOfCalendarMonth && log.date <= endOfCalendarMonth
     })
 
-    // Get all expenses for the viewed month
+    // Get all expenses for the viewed period (matches the range shown in MonthNavigation)
     const allExpenses = await db.query.expenses.findMany({
       where: eq(expenses.userId, session.id),
       orderBy: [desc(expenses.date), desc(expenses.createdAt)],
     })
 
     const filteredMonthExpenses = allExpenses.filter((exp) => {
-      return exp.date >= startOfCalendarMonth && exp.date <= endOfCalendarMonth
+      return exp.date >= period.startDate && exp.date <= period.endDate
     })
 
     return {

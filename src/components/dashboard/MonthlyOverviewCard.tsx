@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import { Wallet } from 'lucide-react'
+import { ChevronDown, Wallet } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import type { FormatCurrencyFn, BudgetItem } from './types'
 
 type MonthlyOverviewCardProps = {
@@ -18,6 +20,10 @@ type MonthlyOverviewCardProps = {
   dailyBudget: number
   /** Currency formatting function */
   formatCurrency: FormatCurrencyFn
+  /** Collapse state */
+  isCollapsed?: boolean
+  /** Toggle collapse */
+  onToggleCollapse?: () => void
 }
 
 /**
@@ -31,19 +37,33 @@ export function MonthlyOverviewCard({
   daysInPeriod,
   dailyBudget,
   formatCurrency,
+  isCollapsed = false,
+  onToggleCollapse,
 }: MonthlyOverviewCardProps) {
   const { t } = useTranslation()
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Wallet className="h-5 w-5" />
-          {t('monthlyOverview.title')}
-        </CardTitle>
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Wallet className="h-5 w-5" />
+            {t('monthlyOverview.title')}
+          </CardTitle>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onToggleCollapse}
+            aria-label={t('common.close')}
+            className="h-8 w-8"
+          >
+            <ChevronDown className={cn('h-4 w-4 transition-transform', isCollapsed && '-rotate-90')} />
+          </Button>
+        </div>
         <CardDescription>{t('monthlyOverview.description')}</CardDescription>
       </CardHeader>
-      <CardContent>
+      {!isCollapsed && <CardContent>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('monthlyOverview.baseBudget')}</span>
@@ -72,7 +92,7 @@ export function MonthlyOverviewCard({
             <span>{t('monthlyOverview.perDay', { amount: formatCurrency(dailyBudget) })}</span>
           </div>
         </div>
-      </CardContent>
+      </CardContent>}
     </Card>
   )
 }

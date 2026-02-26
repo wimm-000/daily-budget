@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Minus, PiggyBank } from 'lucide-react'
+import { Plus, Minus, PiggyBank, ChevronDown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -22,6 +23,8 @@ type AddedMoneyCardProps = {
   onAddIncome: () => void
   onEditIncome: (income: IncomeItem) => void
   onDeleteIncome: (id: number) => Promise<void>
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
 export function AddedMoneyCard({
@@ -32,6 +35,8 @@ export function AddedMoneyCard({
   onAddIncome,
   onEditIncome,
   onDeleteIncome,
+  isCollapsed = false,
+  onToggleCollapse,
 }: AddedMoneyCardProps) {
   const { t } = useTranslation()
   const [pendingDelete, setPendingDelete] = useState<IncomeItem | null>(null)
@@ -60,15 +65,29 @@ export function AddedMoneyCard({
             </CardTitle>
             <CardDescription>{t('settings.addedMoneyDescription')}</CardDescription>
           </div>
-          {isCurrentMonth && (
-            <Button variant="outline" size="sm" className="self-start" onClick={onAddIncome}>
-              <Plus className="h-4 w-4 mr-1" />
-              {t('common.add')}
+          <div className="flex items-center gap-2 self-start">
+            {isCurrentMonth && (
+              <Button variant="outline" size="sm" onClick={onAddIncome}>
+                <Plus className="h-4 w-4 mr-1" />
+                {t('common.add')}
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onToggleCollapse}
+              aria-label={t('common.close')}
+              className="h-8 w-8"
+            >
+              <ChevronDown
+                className={cn('h-4 w-4 transition-transform', isCollapsed && '-rotate-90')}
+              />
             </Button>
-          )}
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
+      {!isCollapsed && <CardContent>
         {incomes && incomes.length > 0 ? (
           <div className="overflow-x-auto -mx-4 sm:mx-0">
             <Table>
@@ -124,7 +143,7 @@ export function AddedMoneyCard({
             {t('settings.noAddedMoney')}
           </p>
         )}
-      </CardContent>
+      </CardContent>}
 
       <ConfirmDeleteDialog
         open={pendingDelete !== null}

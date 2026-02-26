@@ -134,7 +134,7 @@ describe('ExpensesCard', () => {
         />
       )
 
-      const deleteButtons = screen.getAllByRole('button')
+      const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
       expect(deleteButtons).toHaveLength(2)
     })
 
@@ -390,8 +390,8 @@ describe('ExpensesCard', () => {
         />
       )
 
-      const buttons = screen.queryAllByRole('button')
-      expect(buttons).toHaveLength(0)
+      const deleteButtons = screen.queryAllByRole('button', { name: /delete/i })
+      expect(deleteButtons).toHaveLength(0)
     })
   })
 

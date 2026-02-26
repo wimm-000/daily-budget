@@ -54,6 +54,7 @@
     "viewingHistorical": "Viewing historical data for {{month}}."
   },
   "quickActions": {
+    "title": "Quick Actions",
     "addExpense": "Add Expense",
     "addMoney": "Add Money",
     "budgetCopied": "Your monthly budget was automatically copied from last month.",

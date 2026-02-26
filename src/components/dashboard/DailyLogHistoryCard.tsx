@@ -1,5 +1,8 @@
 import { useTranslation } from 'react-i18next'
+import { ChevronDown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -19,6 +22,10 @@ type DailyLogHistoryCardProps = {
   formatCurrency: FormatCurrencyFn
   /** Date formatting function */
   formatDate: FormatDateFn
+  /** Collapse state */
+  isCollapsed?: boolean
+  /** Toggle collapse */
+  onToggleCollapse?: () => void
 }
 
 /**
@@ -29,18 +36,32 @@ export function DailyLogHistoryCard({
   recentLogs,
   formatCurrency,
   formatDate,
+  isCollapsed = false,
+  onToggleCollapse,
 }: DailyLogHistoryCardProps) {
   const { t } = useTranslation()
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">
-          {isCurrentMonth ? t('dailyLog.recentDays') : t('dailyLog.dailyHistory')}
-        </CardTitle>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-lg">
+            {isCurrentMonth ? t('dailyLog.recentDays') : t('dailyLog.dailyHistory')}
+          </CardTitle>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onToggleCollapse}
+            aria-label={t('common.close')}
+            className="h-8 w-8"
+          >
+            <ChevronDown className={cn('h-4 w-4 transition-transform', isCollapsed && '-rotate-90')} />
+          </Button>
+        </div>
         <CardDescription>{t('dailyLog.historyDescription')}</CardDescription>
       </CardHeader>
-      <CardContent>
+      {!isCollapsed && <CardContent>
         {recentLogs && recentLogs.length > 0 ? (
           <div className="overflow-x-auto -mx-4 sm:mx-0">
             <Table>
@@ -94,7 +115,7 @@ export function DailyLogHistoryCard({
         ) : (
           <p className="text-muted-foreground text-center py-4">{t('dailyLog.noHistory')}</p>
         )}
-      </CardContent>
+      </CardContent>}
     </Card>
   )
 }

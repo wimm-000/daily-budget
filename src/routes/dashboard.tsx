@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 
@@ -74,6 +74,10 @@ function DashboardPage() {
   const { i18n } = useTranslation()
   const router = useRouter()
   const data = Route.useLoaderData()
+  const collapseStorageKey = `daily-budget:dashboard-collapsed:v1:${data?.user?.id ?? 'anon'}`
+
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
+  const [collapseStateLoaded, setCollapseStateLoaded] = useState(false)
 
   // Get current locale for date formatting
   const locale = i18n.language === 'es' ? 'es-ES' : 'en-US'
@@ -167,6 +171,33 @@ function DashboardPage() {
     viewMonth === 12 ? viewYear + 1 : viewYear,
     effectiveStartDay
   )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const raw = window.localStorage.getItem(collapseStorageKey)
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, boolean>
+        setCollapsedSections(parsed)
+      } else {
+        setCollapsedSections({})
+      }
+    } catch {
+      setCollapsedSections({})
+    } finally {
+      setCollapseStateLoaded(true)
+    }
+  }, [collapseStorageKey])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !collapseStateLoaded) return
+    window.localStorage.setItem(collapseStorageKey, JSON.stringify(collapsedSections))
+  }, [collapsedSections, collapseStateLoaded, collapseStorageKey])
+
+  const toggleSection = (sectionId: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }))
+  }
 
   // Event handlers
   const handleSetBudget = async (e: React.FormEvent) => {
@@ -419,7 +450,6 @@ function DashboardPage() {
                 />
               )}
 
-              {/* Budget Copied Indicator */}
               {data?.budgetCopiedFromPreviousMonth && (
                 <BudgetCopiedNotice onEditBudget={() => setIsBudgetOpen(true)} />
               )}
@@ -433,6 +463,8 @@ function DashboardPage() {
                 daysInPeriod={daysInPeriod}
                 dailyBudget={dailyBudget}
                 formatCurrency={formatCurrency}
+                isCollapsed={collapsedSections.monthlyOverview ?? false}
+                onToggleCollapse={() => toggleSection('monthlyOverview')}
               />
 
               {/* Today's Expenses / Month Expenses */}
@@ -444,6 +476,8 @@ function DashboardPage() {
                 formatDate={formatDate}
                 onDeleteExpense={handleDeleteExpense}
                 onEditExpense={handleEditExpense}
+                isCollapsed={collapsedSections.monthExpenses ?? false}
+                onToggleCollapse={() => toggleSection('monthExpenses')}
               />
 
               {/* Added Money */}
@@ -455,6 +489,8 @@ function DashboardPage() {
                 onAddIncome={() => setIsIncomeOpen(true)}
                 onDeleteIncome={handleDeleteIncome}
                 onEditIncome={handleEditIncome}
+                isCollapsed={collapsedSections.addedMoney ?? false}
+                onToggleCollapse={() => toggleSection('addedMoney')}
               />
 
               {/* Daily Log History */}
@@ -463,6 +499,8 @@ function DashboardPage() {
                 recentLogs={data?.recentLogs}
                 formatCurrency={formatCurrency}
                 formatDate={formatDate}
+                isCollapsed={collapsedSections.dailyHistory ?? false}
+                onToggleCollapse={() => toggleSection('dailyHistory')}
               />
             </>
           )}

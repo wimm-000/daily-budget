@@ -54,6 +54,7 @@
     "viewingHistorical": "Viendo datos historicos de {{month}}."
   },
   "quickActions": {
+    "title": "Acciones rapidas",
     "addExpense": "Agregar gasto",
     "addMoney": "Agregar dinero",
     "budgetCopied": "Tu presupuesto mensual fue copiado automaticamente del mes anterior.",

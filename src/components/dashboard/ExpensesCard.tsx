@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Calendar, Minus } from 'lucide-react'
+import { Calendar, ChevronDown, Minus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -37,6 +38,10 @@ type ExpensesCardProps = {
   onDeleteExpense: (id: number) => Promise<void>
   /** Callback when editing an expense */
   onEditExpense: (expense: ExpenseItem) => void
+  /** Collapse state */
+  isCollapsed?: boolean
+  /** Toggle collapse */
+  onToggleCollapse?: () => void
 }
 
 /**
@@ -50,6 +55,8 @@ export function ExpensesCard({
   formatDate,
   onDeleteExpense,
   onEditExpense,
+  isCollapsed = false,
+  onToggleCollapse,
 }: ExpensesCardProps) {
   const { t } = useTranslation()
   const currentMonthExpenses = monthExpenses && monthExpenses.length > 0 ? monthExpenses : todayExpenses
@@ -57,12 +64,24 @@ export function ExpensesCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          {t('expenses.monthExpenses')}
-        </CardTitle>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            {t('expenses.monthExpenses')}
+          </CardTitle>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onToggleCollapse}
+            aria-label={t('common.close')}
+            className="h-8 w-8"
+          >
+            <ChevronDown className={cn('h-4 w-4 transition-transform', isCollapsed && '-rotate-90')} />
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent>
+      {!isCollapsed && <CardContent>
         <MonthExpensesTable
           expenses={isCurrentMonth ? currentMonthExpenses : monthExpenses}
           formatCurrency={formatCurrency}
@@ -71,7 +90,7 @@ export function ExpensesCard({
           onEdit={onEditExpense}
           allowDelete={isCurrentMonth}
         />
-      </CardContent>
+      </CardContent>}
     </Card>
   )
 }

@@ -11,6 +11,7 @@ export { TodaySummaryCard } from './TodaySummaryCard'
 export { PastMonthSummaryCard } from './PastMonthSummaryCard'
 export { MonthlyOverviewCard } from './MonthlyOverviewCard'
 export { ExpensesCard } from './ExpensesCard'
+export { AddedMoneyCard } from './AddedMoneyCard'
 export { DailyLogHistoryCard } from './DailyLogHistoryCard'
 export { QuickActions, BudgetCopiedNotice, NoBudgetCard } from './QuickActions'
 

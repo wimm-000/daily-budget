@@ -20,59 +20,44 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog'
-import type { FormatCurrencyFn, FixedExpenseItem, IncomeItem, BudgetItem } from './types'
+import type { FormatCurrencyFn, FixedExpenseItem, BudgetItem } from './types'
 
 type SettingsDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   budget: BudgetItem | null | undefined
   fixedExpenses: FixedExpenseItem[] | undefined
-  incomes: IncomeItem[] | undefined
   totalFixedExpenses: number
-  totalIncomes: number
   formatCurrency: FormatCurrencyFn
   onEditBudget: () => void
   onAddFixedExpense: () => void
   onDeleteFixedExpense: (id: number) => Promise<void>
   onEditFixedExpense: (expense: FixedExpenseItem) => void
-  onDeleteIncome: (id: number) => Promise<void>
-  onEditIncome: (income: IncomeItem) => void
 }
 
-type PendingDelete =
-  | { type: 'fixedExpense'; item: FixedExpenseItem }
-  | { type: 'income'; item: IncomeItem }
-  | null
+type PendingDelete = FixedExpenseItem | null
 
 /**
- * Settings dialog for managing budget, fixed expenses, and incomes
+ * Settings dialog for managing budget and fixed expenses
  */
 export function SettingsDialog({
   open,
   onOpenChange,
   budget,
   fixedExpenses,
-  incomes,
   totalFixedExpenses,
-  totalIncomes,
   formatCurrency,
   onEditBudget,
   onAddFixedExpense,
   onDeleteFixedExpense,
   onEditFixedExpense,
-  onDeleteIncome,
-  onEditIncome,
 }: SettingsDialogProps) {
   const { t } = useTranslation()
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDeleteFixedExpense = (expense: FixedExpenseItem) => {
-    setPendingDelete({ type: 'fixedExpense', item: expense })
-  }
-
-  const handleDeleteIncome = (income: IncomeItem) => {
-    setPendingDelete({ type: 'income', item: income })
+    setPendingDelete(expense)
   }
 
   const handleConfirmDelete = async () => {
@@ -80,36 +65,12 @@ export function SettingsDialog({
 
     setIsDeleting(true)
     try {
-      if (pendingDelete.type === 'fixedExpense') {
-        await onDeleteFixedExpense(pendingDelete.item.id)
-      } else {
-        await onDeleteIncome(pendingDelete.item.id)
-      }
+      await onDeleteFixedExpense(pendingDelete.id)
       setPendingDelete(null)
     } finally {
       setIsDeleting(false)
     }
   }
-
-  const getDeleteDialogProps = () => {
-    if (!pendingDelete) {
-      return { itemType: '', itemName: '' }
-    }
-
-    if (pendingDelete.type === 'fixedExpense') {
-      return {
-        itemType: t('confirmDelete.fixedExpense'),
-        itemName: `${pendingDelete.item.name} - ${formatCurrency(pendingDelete.item.amount)}`,
-      }
-    }
-
-    return {
-      itemType: t('confirmDelete.income'),
-      itemName: `${pendingDelete.item.description || t('common.noDescription')} - ${formatCurrency(pendingDelete.item.amount)}`,
-    }
-  }
-
-  const deleteDialogProps = getDeleteDialogProps()
 
   return (
     <>
@@ -197,67 +158,6 @@ export function SettingsDialog({
               )}
             </div>
 
-            {/* This Month's Income Section */}
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                <div>
-                  <Label className="text-base font-medium">{t('settings.addedMoney')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.addedMoneyDescription')}
-                  </p>
-                </div>
-              </div>
-
-              {incomes && incomes.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t('common.description')}</TableHead>
-                        <TableHead className="text-right">{t('common.amount')}</TableHead>
-                        <TableHead className="w-[50px]"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {incomes.map((income) => (
-                        <TableRow key={income.id}>
-                          <TableCell
-                            className="cursor-pointer hover:underline"
-                            onClick={() => onEditIncome(income)}
-                          >
-                            {income.description || t('common.noDescription')}
-                          </TableCell>
-                          <TableCell className="text-right font-medium text-green-600">
-                            +{formatCurrency(income.amount)}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteIncome(income)}
-                              aria-label={`Delete ${income.description || 'income'}`}
-                            >
-                              <Minus className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      <TableRow>
-                        <TableCell className="font-medium">{t('common.total')}</TableCell>
-                        <TableCell className="text-right font-bold text-green-600">
-                          +{formatCurrency(totalIncomes)}
-                        </TableCell>
-                        <TableCell></TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-center py-4 border rounded-md">
-                  {t('settings.noAddedMoney')}
-                </p>
-              )}
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -270,8 +170,8 @@ export function SettingsDialog({
       <ConfirmDeleteDialog
         open={pendingDelete !== null}
         onOpenChange={(open) => !open && setPendingDelete(null)}
-        itemType={deleteDialogProps.itemType}
-        itemName={deleteDialogProps.itemName}
+        itemType={t('confirmDelete.fixedExpense')}
+        itemName={pendingDelete ? `${pendingDelete.name} - ${formatCurrency(pendingDelete.amount)}` : ''}
         onConfirm={handleConfirmDelete}
         isLoading={isDeleting}
       />

@@ -14,8 +14,6 @@ import {
   getYesterday,
 } from '@/lib/budget-period'
 import {
-  getCurrentMonth,
-  getCurrentYear,
   getPreviousMonth,
   getEffectiveStartDay,
 } from '@/lib/dashboard-helpers'
@@ -533,7 +531,7 @@ export const deleteFixedExpense = createServerFn({
   })
 
 /**
- * Add income for the current month
+ * Add income for the current budget period
  */
 export const addIncome = createServerFn({
   method: 'POST',
@@ -545,15 +543,19 @@ export const addIncome = createServerFn({
       throw new Error('UNAUTHORIZED')
     }
 
-    const month = getCurrentMonth()
-    const year = getCurrentYear()
+    const today = getToday()
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, session.id),
+    })
+    const userStartDay = user?.monthStartDay ?? 1
+    const currentPeriod = getBudgetPeriodForDate(today, userStartDay)
 
     await db.insert(incomes).values({
       userId: session.id,
       amount: data.amount,
       description: data.description || null,
-      month,
-      year,
+      month: currentPeriod.month,
+      year: currentPeriod.year,
     })
 
     return { success: true }

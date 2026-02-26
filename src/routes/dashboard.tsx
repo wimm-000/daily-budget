@@ -41,6 +41,7 @@ import {
   PastMonthSummaryCard,
   MonthlyOverviewCard,
   ExpensesCard,
+  AddedMoneyCard,
   DailyLogHistoryCard,
   QuickActions,
   BudgetCopiedNotice,
@@ -445,6 +446,17 @@ function DashboardPage() {
                 onEditExpense={handleEditExpense}
               />
 
+              {/* Added Money */}
+              <AddedMoneyCard
+                incomes={data?.incomes}
+                totalIncomes={totalIncomes}
+                isCurrentMonth={isCurrentMonth}
+                formatCurrency={formatCurrency}
+                onAddIncome={() => setIsIncomeOpen(true)}
+                onDeleteIncome={handleDeleteIncome}
+                onEditIncome={handleEditIncome}
+              />
+
               {/* Daily Log History */}
               <DailyLogHistoryCard
                 isCurrentMonth={isCurrentMonth}
@@ -523,9 +535,7 @@ function DashboardPage() {
         onOpenChange={setIsSettingsOpen}
         budget={budget}
         fixedExpenses={data?.fixedExpenses}
-        incomes={data?.incomes}
         totalFixedExpenses={totalFixedExpenses}
-        totalIncomes={totalIncomes}
         formatCurrency={formatCurrency}
         onEditBudget={() => {
           setIsSettingsOpen(false)
@@ -534,8 +544,6 @@ function DashboardPage() {
         onAddFixedExpense={() => setIsFixedExpenseOpen(true)}
         onDeleteFixedExpense={handleDeleteFixedExpense}
         onEditFixedExpense={handleEditFixedExpense}
-        onDeleteIncome={handleDeleteIncome}
-        onEditIncome={handleEditIncome}
       />
 
       <AddFixedExpenseDialog
